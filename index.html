@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منصة تداول حديثة</title>
+    <title>QuHub</title>
     <style>
         * {
             margin: 0;
@@ -17,29 +17,11 @@
             color: #fff;
             overflow-x: hidden;
             font-size: 16px;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
         }
 
-        .header {
-            background: rgba(10, 10, 10, 0.9);
-            backdrop-filter: blur(10px);
-            padding: 12px 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            text-align: center;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
+        /* حذف الهيدر بالكامل */
 
-        .header h1 {
-            font-size: 18px;
-            color: #00d2ff;
-            font-weight: 500;
-        }
-
-        /* شريط التحكم الثابت تحت الهيدر */
+        /* شريط التحكم وشريط التنقل في الأسفل - ملتصقين */
         .control-bar {
             background: rgba(10, 10, 10, 0.95);
             backdrop-filter: blur(10px);
@@ -47,11 +29,31 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            position: sticky;
-            top: 58px; /* تحت الهيدر مباشرة */
-            z-index: 999;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            position: fixed;
+            bottom: 60px; /* تحت الـ bottom-nav */
+            left: 0;
+            right: 0;
+            z-index: 1999;
+            box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.5);
+            height: 60px; /* تحديد ارتفاع ثابت */
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(5, 5, 5, 0.98);
+            backdrop-filter: blur(10px);
+            padding: 12px 0;
+            border-top: 1px solid rgba(0, 210, 255, 0.2);
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.6);
+            z-index: 2000;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            height: 60px; /* تحديد ارتفاع ثابت */
         }
 
         .control-left, .control-right {
@@ -108,7 +110,7 @@
             transform: scale(1.1);
         }
 
-        .currency-input-group {
+        .currency-display-group {
             display: flex;
             align-items: center;
             gap: 6px;
@@ -117,23 +119,15 @@
             border-radius: 6px;
         }
 
-        .currency-input {
-            background: transparent;
-            border: none;
+        .currency-display {
             color: #fff;
             font-size: 14px;
-            width: 100px;
-            outline: none;
+            min-width: 80px;
             text-align: center;
         }
 
-        .currency-input::placeholder {
-            color: rgba(255, 255, 255, 0.5);
-        }
-
         .page-content {
-            flex: 1;
-            padding: 20px 15px;
+            padding: 15px 15px 120px 15px; /* من الأعلى والأسفل - 120px = 60px * 2 */
             overflow-y: auto;
             display: none;
         }
@@ -150,11 +144,12 @@
             overflow: hidden;
             border-radius: 10px;
             margin-bottom: 15px;
+            height: calc(100vh - 120px); /* يمتد من الأعلى إلى الشريطين في الأسفل */
         }
 
         .chart-placeholder {
             width: 100%;
-            height: 300px;
+            height: 100%;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -218,19 +213,23 @@
         }
 
         .timeframe-card {
-            bottom: 80px;
+            bottom: 120px; /* 60px (control-bar height) + 60px (bottom-nav height) */
             right: 15px;
             left: auto;
             transform: none;
             width: auto;
+            max-height: 70vh;
+            overflow-y: auto;
         }
 
         .asset-type-card {
-            bottom: 80px;
+            bottom: 120px; /* 60px (control-bar height) + 60px (bottom-nav height) */
             right: 15px;
             left: auto;
             transform: none;
             width: auto;
+            max-height: 70vh;
+            overflow-y: auto;
         }
 
         .card-header {
@@ -331,22 +330,6 @@
             transform: translateX(-5px);
         }
 
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(5, 5, 5, 0.98);
-            backdrop-filter: blur(10px);
-            padding: 12px 0;
-            border-top: 1px solid rgba(0, 210, 255, 0.2);
-            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.6);
-            z-index: 2000;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-        }
-
         .nav-btn {
             background: transparent;
             border: none;
@@ -382,20 +365,20 @@
             transform: scale(1.1);
         }
 
-        .signals-section, .about-section {
+        .signals-section, .about-section, .bot-section, .profile-section {
             padding: 20px 15px;
             max-width: 100%;
             margin: 0 auto;
             text-align: center;
         }
 
-        .signals-section h2, .about-section h2 {
+        .signals-section h2, .about-section h2, .bot-section h2, .profile-section h2 {
             color: #00d2ff;
             margin-bottom: 20px;
             font-size: 26px;
         }
 
-        .signals-section p, .about-section p {
+        .signals-section p, .about-section p, .bot-section p, .profile-section p {
             color: rgba(255, 255, 255, 0.7);
             line-height: 1.8;
             margin-bottom: 15px;
@@ -430,17 +413,229 @@
             border-radius: 3px;
         }
 
+        /* بطاقة الإشارة */
+        .signal-card {
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid rgba(255, 0, 0, 0.4);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .signal-card.buy {
+            background: rgba(0, 255, 0, 0.2);
+            border-color: rgba(0, 255, 0, 0.4);
+        }
+
+        .signal-info {
+            text-align: right;
+        }
+
+        .signal-asset {
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+
+        .signal-action {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .signal-timer {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            border-top: 3px solid #00d2ff;
+            border-radius: 50%;
+            animation: spin 2s linear infinite;
+        }
+
+        /* صفحة البوت */
+        .bot-config {
+            background: rgba(15, 15, 15, 0.7);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .balance-display {
+            display: flex;
+            justify-content: space-between;
+            background: rgba(0, 210, 255, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .config-group {
+            margin-bottom: 15px;
+            text-align: right;
+        }
+
+        .config-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #00d2ff;
+        }
+
+        .config-group input, .config-group select, .config-group button {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .strategy-display {
+            background: rgba(0, 210, 255, 0.2);
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .action-buttons button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .start-btn {
+            background: linear-gradient(45deg, #00d2ff, #3a7bd5);
+            color: white;
+        }
+
+        .stop-btn {
+            background: linear-gradient(45deg, #ff416c, #ff4b2b);
+            color: white;
+        }
+
+        .trades-list {
+            margin-top: 30px;
+        }
+
+        .trade-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .trade-profit {
+            color: #00ff00;
+        }
+
+        .trade-loss {
+            color: #ff0000;
+        }
+
+        /* صفحة البروفايل */
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .profile-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #00d2ff, #3a7bd5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .profile-info h3 {
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+
+        .profile-info p {
+            opacity: 0.7;
+            font-size: 14px;
+        }
+
+        .profile-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .profile-card {
+            background: rgba(0, 210, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .profile-card h4 {
+            color: #00d2ff;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .profile-card p {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .profile-form {
+            background: rgba(15, 15, 15, 0.7);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .logout-btn {
+            background: linear-gradient(45deg, #ff416c, #ff4b2b);
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+        }
+
         @media (max-width: 600px) {
             body {
                 font-size: 17px;
             }
             
-            .header h1 {
-                font-size: 20px;
-            }
-            
             .control-bar {
                 padding: 8px 12px;
+                height: 50px; /* ارتفاع اقل للشاشات الصغيرة */
+            }
+            
+            .bottom-nav {
+                height: 50px; /* ارتفاع اقل للشاشات الصغيرة */
             }
             
             .icon-btn {
@@ -454,9 +649,9 @@
                 font-size: 14px;
             }
             
-            .currency-input {
-                width: 85px;
+            .currency-display {
                 font-size: 13px;
+                min-width: 70px;
             }
             
             .timeframes-grid {
@@ -472,22 +667,298 @@
                 width: 24px;
                 height: 24px;
             }
+            
+            .profile-cards {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
-    <header class="header">
-        <h1>منصة تداول حديثة</h1>
-    </header>
+    <!-- الصفحة الرئيسية (التداول) -->
+    <div id="homePage" class="page-content active">
+        <div class="chart-container">
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+            </div>
+            <div class="chart-placeholder">
+                <h2>📊 منطقة الشارت</h2>
+                <p>سيتم عرض الشموع هنا بعد الاتصال بالـ API</p>
+                <p style="margin-top: 20px; font-size: 15px; opacity: 0.6;">
+                    الفريم: <span id="currentTimeframeDisplay" style="color:#00d2ff">1m</span> | 
+                    العملة: <span id="currentAssetDisplay" style="color:#3a7bd5">USD/EUR</span>
+                </p>
+            </div>
+        </div>
+    </div>
 
-    <!-- شريط التحكم الثابت مباشرة تحت الهيدر -->
+    <!-- صفحة الإشارات -->
+    <div id="signalsPage" class="page-content">
+        <div class="signals-section">
+            <h2>📈 صفحة الإشارات</h2>
+            <p>هنا ستظهر إشارات التداول الفورية من البوت الخاص بك.</p>
+            
+            <!-- بطاقة الإشارة 1 -->
+            <div class="signal-card buy">
+                <div class="signal-info">
+                    <div class="signal-asset">EUR/USD</div>
+                    <div class="signal-action">شراء</div>
+                </div>
+                <div class="signal-timer"></div>
+            </div>
+            
+            <!-- بطاقة الإشارة 2 -->
+            <div class="signal-card">
+                <div class="signal-info">
+                    <div class="signal-asset">BTC/USDT</div>
+                    <div class="signal-action">بيع</div>
+                </div>
+                <div class="signal-timer"></div>
+            </div>
+            
+            <!-- بطاقة الإشارة 3 -->
+            <div class="signal-card buy">
+                <div class="signal-info">
+                    <div class="signal-asset">GOLD/USD</div>
+                    <div class="signal-action">شراء</div>
+                </div>
+                <div class="signal-timer"></div>
+            </div>
+            
+            <!-- بطاقة الإشارة 4 -->
+            <div class="signal-card">
+                <div class="signal-info">
+                    <div class="signal-asset">AAPL</div>
+                    <div class="signal-action">بيع</div>
+                </div>
+                <div class="signal-timer"></div>
+            </div>
+            
+            <!-- بطاقة الإشارة 5 -->
+            <div class="signal-card buy">
+                <div class="signal-info">
+                    <div class="signal-asset">ETH/USDT</div>
+                    <div class="signal-action">شراء</div>
+                </div>
+                <div class="signal-timer"></div>
+            </div>
+            
+            <!-- بطاقة الإشارة 6 -->
+            <div class="signal-card">
+                <div class="signal-info">
+                    <div class="signal-asset">USD/JPY</div>
+                    <div class="signal-action">بيع</div>
+                </div>
+                <div class="signal-timer"></div>
+            </div>
+            
+            <!-- بطاقة الإشارة 7 -->
+            <div class="signal-card buy">
+                <div class="signal-info">
+                    <div class="signal-asset">SILVER/USD</div>
+                    <div class="signal-action">شراء</div>
+                </div>
+                <div class="signal-timer"></div>
+            </div>
+            
+            <!-- بطاقة الإشارة 8 -->
+            <div class="signal-card">
+                <div class="signal-info">
+                    <div class="signal-asset">GOOGL</div>
+                    <div class="signal-action">بيع</div>
+                </div>
+                <div class="signal-timer"></div>
+            </div>
+            
+            <!-- بطاقة الإشارة 9 -->
+            <div class="signal-card buy">
+                <div class="signal-info">
+                    <div class="signal-asset">BNB/USDT</div>
+                    <div class="signal-action">شراء</div>
+                </div>
+                <div class="signal-timer"></div>
+            </div>
+            
+            <!-- بطاقة الإشارة 10 -->
+            <div class="signal-card">
+                <div class="signal-info">
+                    <div class="signal-asset">EUR/GBP</div>
+                    <div class="signal-action">بيع</div>
+                </div>
+                <div class="signal-timer"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- صفحة البوت -->
+    <div id="botPage" class="page-content">
+        <div class="bot-section">
+            <h2>🤖 التداول الآلي</h2>
+            <p>قم بتكوين إعدادات البوت الخاص بك للبدء في التداول التلقائي.</p>
+            
+            <div class="bot-config">
+                <!-- عرض الرصيد -->
+                <div class="balance-display">
+                    <div>الرصيد التجريبي: <strong>$10,000</strong></div>
+                    <div>الرصيد الحقيقي: <strong>$2,500</strong></div>
+                </div>
+                
+                <!-- مبلغ الصفقة -->
+                <div class="config-group">
+                    <label for="tradeAmount">مبلغ الصفقة ($)</label>
+                    <input type="number" id="tradeAmount" value="100" placeholder="أدخل مبلغ الصفقة">
+                </div>
+                
+                <!-- استراتيجية التداول -->
+                <div class="config-group">
+                    <label>استراتيجية التداول</label>
+                    <button class="icon-btn" onclick="showStrategies()">عرض قائمة الاستراتيجيات</button>
+                    <div class="strategy-display" id="selectedStrategy">لم يتم اختيار استراتيجية</div>
+                </div>
+                
+                <!-- هدف الربح -->
+                <div class="config-group">
+                    <label for="takeProfit">هدف الربح ($)</label>
+                    <input type="number" id="takeProfit" value="200" placeholder="أدخل هدف الربح">
+                </div>
+                
+                <!-- وقف الخسارة -->
+                <div class="config-group">
+                    <label for="stopLoss">وقف الخسارة ($)</label>
+                    <input type="number" id="stopLoss" value="100" placeholder="أدخل وقف الخسارة">
+                </div>
+                
+                <!-- أزرار الحفظ والبدء -->
+                <div class="action-buttons">
+                    <button class="start-btn" id="startTradingBtn" onclick="toggleTrading()">ابدأ التداول</button>
+                    <button onclick="saveSettings()">حفظ الإعدادات</button>
+                </div>
+            </div>
+            
+            <!-- صفقات التداول -->
+            <div class="trades-list" id="tradesList" style="display: none;">
+                <h3>الصفقات الجارية والمنتهية</h3>
+                <div class="trade-item">
+                    <div>EUR/USD - شراء</div>
+                    <div class="trade-profit">+$150</div>
+                </div>
+                <div class="trade-item">
+                    <div>BTC/USDT - بيع</div>
+                    <div class="trade-loss">-$75</div>
+                </div>
+                <div class="trade-item">
+                    <div>GOLD/USD - شراء</div>
+                    <div class="trade-profit">+$200</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- صفحة حول -->
+    <div id="aboutPage" class="page-content">
+        <div class="about-section">
+            <h2>ℹ️ كيفية التشغيل</h2>
+            <p>اتبع الخطوات التالية لتشغيل بوت QuHub الخاص بك:</p>
+            
+            <div class="info-box">
+                <h3>📱 للمستخدمين على أندرويد:</h3>
+                <p>1. قم بتنزيل تطبيق Termux من متجر Google Play.<br>
+                2. افتح التطبيق وقم بتشغيل الأوامر التالية:<br>
+                <code>pkg install git python</code><br>
+                <code>git clone https://github.com/your-repo/quhub-bot.git</code><br>
+                <code>cd quhub-bot && python main.py</code><br>
+                3. سيولد التطبيق توكن فريد، قم بنسخه.<br>
+                4. الصق التوكن في صفحة البروفايل في هذا الموقع لتفعيل البوت.</p>
+            </div>
+            
+            <div class="info-box">
+                <h3>💻 للمستخدمين على ويندوز/لينكس:</h3>
+                <p>1. افتح الطرفية (Terminal/CMD).<br>
+                2. قم بتشغيل الأوامر التالية:<br>
+                <code>git clone https://github.com/your-repo/quhub-bot.git</code><br>
+                <code>cd quhub-bot</code><br>
+                <code>python3 -m venv venv && source venv/bin/activate</code> (لينكس/ماك)<br>
+                <code>python -m venv venv && venv\Scripts\activate</code> (ويندوز)<br>
+                <code>pip install -r requirements.txt</code><br>
+                <code>python main.py</code><br>
+                3. سيولد التطبيق توكن فريد، قم بنسخه.<br>
+                4. الصق التوكن في صفحة البروفايل في هذا الموقع لتفعيل البوت.</p>
+            </div>
+            
+            <div class="info-box">
+                <h3>🚀 المميزات:</h3>
+                <p>• إشارات تداول فورية<br>
+                • تحليل فني متقدم<br>
+                • استراتيجيات تداول متنوعة<br>
+                • مراقبة الصفقات في الوقت الحقيقي<br>
+                • واجهة مستخدم سهلة وبسيطة</p>
+            </div>
+            
+            <p style="margin-top: 30px; font-size: 14px; opacity: 0.4;">
+                &copy; 2025 QuHub. جميع الحقوق محفوظة.
+            </p>
+        </div>
+    </div>
+
+    <!-- صفحة البروفايل -->
+    <div id="profilePage" class="page-content">
+        <div class="profile-section">
+            <h2>👤 الحساب</h2>
+            
+            <div class="profile-header">
+                <div class="profile-avatar">Q</div>
+                <div class="profile-info">
+                    <h3>QuHub User</h3>
+                    <p>حساب تجريبي نشط</p>
+                </div>
+            </div>
+            
+            <div class="profile-cards">
+                <div class="profile-card">
+                    <h4>الرصيد التجريبي</h4>
+                    <p>$10,000</p>
+                </div>
+                <div class="profile-card">
+                    <h4>الرصيد الحقيقي</h4>
+                    <p>$2,500</p>
+                </div>
+            </div>
+            
+            <div class="profile-form">
+                <div class="config-group">
+                    <label for="apiKey">مفتاح API (التوكن)</label>
+                    <input type="text" id="apiKey" placeholder="أدخل التوكن المولد من التطبيق">
+                </div>
+                
+                <div class="config-group">
+                    <label for="accountType">نوع الحساب</label>
+                    <select id="accountType">
+                        <option value="demo">تجريبي</option>
+                        <option value="real">حقيقي</option>
+                        <option value="signals">إشارات فقط</option>
+                    </select>
+                </div>
+                
+                <div class="config-group">
+                    <label for="kucoinAccount">حساب KuCoin</label>
+                    <input type="text" id="kucoinAccount" placeholder="أدخل معرف حساب KuCoin">
+                </div>
+                
+                <button class="start-btn" onclick="saveProfile()">حفظ الإعدادات</button>
+            </div>
+            
+            <button class="logout-btn" onclick="logout()">تسجيل الخروج</button>
+        </div>
+    </div>
+
+    <!-- شريط التحكم في الأسفل - ملتصق بالأسفل -->
     <div class="control-bar">
         <div class="control-left">
             <button class="icon-btn timeframe-toggle" onclick="toggleTimeframeCard()">
                 <span id="timeframeBtnText">1m</span>
             </button>
-            <div class="currency-input-group">
-                <input type="text" class="currency-input" id="currencyInput" placeholder="BTC/USDT" value="BTC/USDT">
+            <div class="currency-display-group">
+                <div class="currency-display" id="currencyDisplay">USD/EUR</div>
                 <button class="icon-btn add-btn" onclick="toggleAssetCard()">+</button>
             </div>
         </div>
@@ -499,64 +970,7 @@
         </div>
     </div>
 
-    <div id="homePage" class="page-content active">
-        <div class="chart-container">
-            <div class="loading" id="loading">
-                <div class="spinner"></div>
-            </div>
-            <div class="chart-placeholder">
-                <h2>📊 منطقة الشارت</h2>
-                <p>سيتم عرض الشموع هنا بعد الاتصال بالـ API</p>
-                <p style="margin-top: 20px; font-size: 15px; opacity: 0.6;">
-                    الفريم: <span id="currentTimeframeDisplay" style="color:#00d2ff">1m</span> | 
-                    العملة: <span id="currentAssetDisplay" style="color:#3a7bd5">BTC/USDT</span>
-                </p>
-            </div>
-        </div>
-    </div>
-
-    <div id="signalsPage" class="page-content">
-        <div class="signals-section">
-            <h2>📈 صفحة الإشارات</h2>
-            <p>هنا ستظهر إشارات التداول والتوصيات الخاصة بالعملات والأصول المختلفة.</p>
-            <div class="info-box">
-                <h3>🔔 إشارات فورية</h3>
-                <p>اشترك في الإشارات الفورية لتصلك تنبيهات فورية عند حدوث فرص تداول.</p>
-            </div>
-            <div class="info-box">
-                <h3>📊 تحليل فني</h3>
-                <p>احصل على تحليل فني مفصل لجميع الأزواج مع نقاط الدعم والمقاومة.</p>
-            </div>
-            <p style="margin-top: 30px; opacity: 0.5; font-size: 16px;">الإشارات ستكون متاحة قريباً...</p>
-        </div>
-    </div>
-
-    <div id="aboutPage" class="page-content">
-        <div class="about-section">
-            <h2>ℹ️ من نحن</h2>
-            <p>مرحباً بك في منصتنا المتخصصة في التداول الحديث.</p>
-            <div class="info-box">
-                <h3>🎯 مهمتنا</h3>
-                <p>توفير بيئة تداول احترافية وسهلة الاستخدام لجميع المستثمرين، مع أدوات تحليل متقدمة وواجهة مستخدم حديثة.</p>
-            </div>
-            <div class="info-box">
-                <h3>🚀 مميزاتنا</h3>
-                <p>• واجهة سريعة وحديثة<br>
-                • تحليل فني متقدم<br>
-                • إشارات تداول ذكية<br>
-                • دعم فني على مدار الساعة</p>
-            </div>
-            <div class="info-box">
-                <h3>📞 تواصل معنا</h3>
-                <p>البريد: info@trading-platform.com<br>
-                الهاتف: +123 456 7890</p>
-            </div>
-            <p style="margin-top: 30px; font-size: 14px; opacity: 0.4;">
-                &copy; 2025 منصة تداول حديثة. جميع الحقوق محفوظة.
-            </p>
-        </div>
-    </div>
-
+    <!-- شريط التنقل في الأسفل -->
     <div class="bottom-nav">
         <button class="nav-btn active" onclick="showPage('home')">
             <svg viewBox="0 0 24 24">
@@ -578,14 +992,29 @@
             </svg>
             <span>الإشارات</span>
         </button>
+        <button class="nav-btn" onclick="showPage('bot')">
+            <svg viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
+                <path d="M8 12h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M12 8v8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <span>البوت</span>
+        </button>
         <button class="nav-btn" onclick="showPage('about')">
             <svg viewBox="0 0 24 24">
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
             </svg>
             <span>حول</span>
         </button>
+        <button class="nav-btn" onclick="showPage('profile')">
+            <svg viewBox="0 0 24 24">
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+            </svg>
+            <span>حسابي</span>
+        </button>
     </div>
 
+    <!-- كروت اختيار الفريم والعملات -->
     <div class="card timeframe-card" id="timeframeCard">
         <div class="card-header">
             <h3 class="card-title">اختر الوقت</h3>
@@ -622,9 +1051,27 @@
         </div>
     </div>
 
+    <!-- كرت استراتيجيات التداول -->
+    <div class="card asset-type-card" id="strategiesCard" style="display: none; bottom: 120px;">
+        <div class="card-header">
+            <h3 class="card-title">استراتيجيات التداول</h3>
+            <button class="close-btn" onclick="hideStrategies()">✕</button>
+        </div>
+        <div class="asset-options">
+            <button class="asset-btn" onclick="selectStrategy('Moving Average Crossover')">المتوسط المتحرك</button>
+            <button class="asset-btn" onclick="selectStrategy('MACD')">MACD</button>
+            <button class="asset-btn" onclick="selectStrategy('RSI Divergence')">RSI Divergence</button>
+            <button class="asset-btn" onclick="selectStrategy('Bollinger Bands')">Bollinger Bands</button>
+            <button class="asset-btn" onclick="selectStrategy('Ichimoku Cloud')">Ichimoku Cloud</button>
+            <button class="asset-btn" onclick="selectStrategy('Fibonacci Retracement')">Fibonacci Retracement</button>
+        </div>
+    </div>
+
     <script>
         let currentTimeframe = '1m';
-        let currentAsset = 'BTC/USDT';
+        let currentAsset = 'USD/EUR';
+        let selectedStrategy = '';
+        let isTrading = false;
         let zoomLevel = 1;
 
         function showPage(pageName) {
@@ -643,6 +1090,7 @@
             const card = document.getElementById('timeframeCard');
             card.classList.toggle('active');
             document.getElementById('assetCard').classList.remove('active');
+            document.getElementById('strategiesCard').style.display = 'none';
             document.querySelectorAll('#tempAssetCard').forEach(c => c.remove());
         }
 
@@ -650,17 +1098,35 @@
             const card = document.getElementById('assetCard');
             card.classList.toggle('active');
             document.getElementById('timeframeCard').classList.remove('active');
+            document.getElementById('strategiesCard').style.display = 'none';
+        }
+
+        function showStrategies() {
+            document.getElementById('strategiesCard').style.display = 'block';
+            document.getElementById('timeframeCard').classList.remove('active');
+            document.getElementById('assetCard').classList.remove('active');
+        }
+
+        function hideStrategies() {
+            document.getElementById('strategiesCard').style.display = 'none';
+        }
+
+        function selectStrategy(strategy) {
+            selectedStrategy = strategy;
+            document.getElementById('selectedStrategy').textContent = strategy;
+            hideStrategies();
         }
 
         function closeAllCards() {
             document.querySelectorAll('.card').forEach(card => {
                 card.classList.remove('active');
             });
+            document.getElementById('strategiesCard').style.display = 'none';
             document.querySelectorAll('#tempAssetCard').forEach(c => c.remove());
         }
 
         document.addEventListener('click', function(e) {
-            if (!e.target.closest('.card') && !e.target.closest('.icon-btn')) {
+            if (!e.target.closest('.card') && !e.target.closest('.icon-btn') && !e.target.closest('.config-group button')) {
                 closeAllCards();
             }
         });
@@ -681,31 +1147,26 @@
 
         function selectAsset(asset) {
             currentAsset = asset;
-            document.getElementById('currencyInput').value = asset;
+            document.getElementById('currencyDisplay').textContent = asset;
             document.getElementById('currentAssetDisplay').textContent = asset;
             closeAllCards();
             updateChart();
         }
 
-        document.getElementById('currencyInput').addEventListener('input', function() {
-            currentAsset = this.value.toUpperCase();
-            document.getElementById('currentAssetDisplay').textContent = currentAsset;
-        });
-
         function showAssetList(type) {
             let assets = [];
             switch(type) {
                 case 'currencies':
-                    assets = ['USD/EUR', 'USD/GBP', 'USD/JPY', 'EUR/GBP', 'EUR/JPY', 'GBP/JPY'];
+                    assets = ['USD/EUR', 'USD/GBP', 'USD/JPY', 'EUR/GBP', 'EUR/JPY', 'GBP/JPY', 'AUD/USD', 'NZD/USD', 'USD/CAD', 'USD/CHF'];
                     break;
                 case 'crypto':
-                    assets = ['BTC/USDT', 'ETH/USDT', 'BNB/USDT', 'SOL/USDT', 'XRP/USDT', 'ADA/USDT'];
+                    assets = ['BTC/USDT', 'ETH/USDT', 'BNB/USDT', 'SOL/USDT', 'XRP/USDT', 'ADA/USDT', 'DOGE/USDT', 'DOT/USDT', 'LTC/USDT', 'LINK/USDT'];
                     break;
                 case 'commodities':
-                    assets = ['GOLD/USD', 'SILVER/USD', 'OIL/USD', 'GAS/USD', 'WHEAT/USD', 'CORN/USD'];
+                    assets = ['GOLD/USD', 'SILVER/USD', 'OIL/USD', 'GAS/USD', 'WHEAT/USD', 'CORN/USD', 'COPPER/USD', 'PLATINUM/USD'];
                     break;
                 case 'stocks':
-                    assets = ['AAPL', 'GOOGL', 'MSFT', 'TSLA', 'AMZN', 'META'];
+                    assets = ['AAPL', 'GOOGL', 'MSFT', 'TSLA', 'AMZN', 'META', 'NVDA', 'NFLX', 'PYPL', 'INTC'];
                     break;
             }
             
@@ -714,11 +1175,13 @@
             const tempCard = document.createElement('div');
             tempCard.className = 'card asset-type-card';
             tempCard.id = 'tempAssetCard';
-            tempCard.style.bottom = '80px';
+            tempCard.style.bottom = '120px';
             tempCard.style.right = '15px';
             tempCard.style.left = '15px';
             tempCard.style.width = 'auto';
             tempCard.style.transform = 'none';
+            tempCard.style.maxHeight = '70vh';
+            tempCard.style.overflowY = 'auto';
             
             let listHTML = '<div class="card-header"><h3 class="card-title">اختر ' + getAssetTypeName(type) + '</h3><button class="close-btn" onclick="closeAllCards()">✕</button></div><div class="asset-options">';
             assets.forEach(asset => {
@@ -772,6 +1235,39 @@
                     </p>
                 `;
             }, 800);
+        }
+
+        function toggleTrading() {
+            isTrading = !isTrading;
+            const btn = document.getElementById('startTradingBtn');
+            const tradesList = document.getElementById('tradesList');
+            
+            if (isTrading) {
+                btn.textContent = 'إيقاف التداول';
+                btn.classList.remove('start-btn');
+                btn.classList.add('stop-btn');
+                tradesList.style.display = 'block';
+            } else {
+                btn.textContent = 'ابدأ التداول';
+                btn.classList.remove('stop-btn');
+                btn.classList.add('start-btn');
+                tradesList.style.display = 'none';
+            }
+        }
+
+        function saveSettings() {
+            alert('تم حفظ إعدادات التداول بنجاح!');
+        }
+
+        function saveProfile() {
+            alert('تم حفظ إعدادات الحساب بنجاح!');
+        }
+
+        function logout() {
+            if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
+                alert('تم تسجيل الخروج بنجاح!');
+                // هنا يمكنك إضافة منطق تسجيل الخروج الفعلي
+            }
         }
     </script>
 </body>

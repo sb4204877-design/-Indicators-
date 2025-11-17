@@ -15,10 +15,11 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #000000, #0a0a0a, #000000);
             color: #fff;
-            /* إزالة overflow: hidden لتمكين التمرير */
             overflow-x: hidden;
-            /* زيادة حجم الخط العام */
             font-size: 16px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
         .header {
@@ -38,55 +39,25 @@
             font-weight: 500;
         }
 
-        .page-content {
-            display: none;
-            padding: 20px 15px 100px 15px;
-            /* تمكين التمرير العمودي */
-            overflow-y: auto;
-        }
-
-        .page-content.active {
-            display: block;
-        }
-
-        .chart-container {
-            background: rgba(10, 10, 10, 0.5);
-            margin: 0;
-            padding: 15px;
-            position: relative;
-            overflow: hidden;
-            margin-bottom: 15px;
-        }
-
-        .chart-placeholder {
-            width: 100%;
-            height: 300px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            border: 1px dashed rgba(0, 210, 255, 0.2);
-            border-radius: 10px;
-            background: rgba(0, 0, 0, 0.4);
-            color: rgba(255, 255, 255, 0.8);
-        }
-
-        .bottom-controls {
+        /* شريط التحكم الثابت تحت الهيدر */
+        .control-bar {
             background: rgba(10, 10, 10, 0.95);
             backdrop-filter: blur(10px);
-            padding: 12px 15px;
-            border-radius: 10px;
+            padding: 10px 15px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-            margin-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 58px; /* تحت الهيدر مباشرة */
+            z-index: 999;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
         }
 
-        .left-controls, .right-controls {
+        .control-left, .control-right {
             display: flex;
-            gap: 10px;
             align-items: center;
+            gap: 10px;
         }
 
         .icon-btn {
@@ -158,6 +129,66 @@
 
         .currency-input::placeholder {
             color: rgba(255, 255, 255, 0.5);
+        }
+
+        .page-content {
+            flex: 1;
+            padding: 20px 15px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .page-content.active {
+            display: block;
+        }
+
+        .chart-container {
+            background: rgba(10, 10, 10, 0.5);
+            margin: 0 0 15px 0;
+            padding: 15px;
+            position: relative;
+            overflow: hidden;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .chart-placeholder {
+            width: 100%;
+            height: 300px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 1px dashed rgba(0, 210, 255, 0.2);
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.4);
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: none;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            width: 35px;
+            height: 35px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid #00d2ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         .card {
@@ -300,32 +331,6 @@
             transform: translateX(-5px);
         }
 
-        .loading {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            display: none;
-        }
-
-        .loading.active {
-            display: block;
-        }
-
-        .spinner {
-            width: 35px;
-            height: 35px;
-            border: 3px solid rgba(255, 255, 255, 0.1);
-            border-top: 3px solid #00d2ff;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -425,7 +430,6 @@
             border-radius: 3px;
         }
 
-        /* تعديلات موبايل */
         @media (max-width: 600px) {
             body {
                 font-size: 17px;
@@ -435,18 +439,24 @@
                 font-size: 20px;
             }
             
-            .chart-placeholder {
-                height: 250px;
+            .control-bar {
+                padding: 8px 12px;
             }
             
-            .bottom-controls {
-                flex-direction: column;
-                gap: 12px;
-                align-items: stretch;
+            .icon-btn {
+                font-size: 14px;
+                padding: 6px 10px;
             }
             
-            .left-controls, .right-controls {
-                justify-content: center;
+            .zoom-btn {
+                width: 28px;
+                height: 28px;
+                font-size: 14px;
+            }
+            
+            .currency-input {
+                width: 85px;
+                font-size: 13px;
             }
             
             .timeframes-grid {
@@ -455,7 +465,7 @@
             
             .nav-btn {
                 font-size: 12px;
-                padding: 8px 10px;
+                padding: 6px 10px;
             }
             
             .nav-btn svg {
@@ -470,6 +480,25 @@
         <h1>منصة تداول حديثة</h1>
     </header>
 
+    <!-- شريط التحكم الثابت مباشرة تحت الهيدر -->
+    <div class="control-bar">
+        <div class="control-left">
+            <button class="icon-btn timeframe-toggle" onclick="toggleTimeframeCard()">
+                <span id="timeframeBtnText">1m</span>
+            </button>
+            <div class="currency-input-group">
+                <input type="text" class="currency-input" id="currencyInput" placeholder="BTC/USDT" value="BTC/USDT">
+                <button class="icon-btn add-btn" onclick="toggleAssetCard()">+</button>
+            </div>
+        </div>
+        <div class="control-right">
+            <div class="zoom-controls">
+                <button class="zoom-btn" onclick="zoomOut()">-</button>
+                <button class="zoom-btn" onclick="zoomIn()">+</button>
+            </div>
+        </div>
+    </div>
+
     <div id="homePage" class="page-content active">
         <div class="chart-container">
             <div class="loading" id="loading">
@@ -482,60 +511,6 @@
                     الفريم: <span id="currentTimeframeDisplay" style="color:#00d2ff">1m</span> | 
                     العملة: <span id="currentAssetDisplay" style="color:#3a7bd5">BTC/USDT</span>
                 </p>
-            </div>
-        </div>
-
-        <div class="bottom-controls">
-            <div class="left-controls">
-                <button class="icon-btn timeframe-toggle" onclick="toggleTimeframeCard()">
-                    <span id="timeframeBtnText">1m</span>
-                </button>
-                <div class="currency-input-group">
-                    <input type="text" class="currency-input" id="currencyInput" placeholder="BTC/USDT" value="BTC/USDT">
-                    <button class="icon-btn add-btn" onclick="toggleAssetCard()">+</button>
-                </div>
-            </div>
-            <div class="right-controls">
-                <div class="zoom-controls">
-                    <button class="zoom-btn" onclick="zoomOut()">-</button>
-                    <button class="zoom-btn" onclick="zoomIn()">+</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="card timeframe-card" id="timeframeCard">
-            <div class="card-header">
-                <h3 class="card-title">اختر الوقت</h3>
-                <button class="close-btn" onclick="toggleTimeframeCard()">✕</button>
-            </div>
-            <div class="timeframes-grid">
-                <button class="timeframe-btn" data-timeframe="5s">5s</button>
-                <button class="timeframe-btn" data-timeframe="10s">10s</button>
-                <button class="timeframe-btn" data-timeframe="15s">15s</button>
-                <button class="timeframe-btn" data-timeframe="30s">30s</button>
-                <button class="timeframe-btn active" data-timeframe="1m">1m</button>
-                <button class="timeframe-btn" data-timeframe="2m">2m</button>
-                <button class="timeframe-btn" data-timeframe="3m">3m</button>
-                <button class="timeframe-btn" data-timeframe="5m">5m</button>
-                <button class="timeframe-btn" data-timeframe="10m">10m</button>
-                <button class="timeframe-btn" data-timeframe="15m">15m</button>
-                <button class="timeframe-btn" data-timeframe="30m">30m</button>
-                <button class="timeframe-btn" data-timeframe="1h">1h</button>
-                <button class="timeframe-btn" data-timeframe="4h">4h</button>
-                <button class="timeframe-btn" data-timeframe="1d">1d</button>
-            </div>
-        </div>
-
-        <div class="card asset-type-card" id="assetCard">
-            <div class="card-header">
-                <h3 class="card-title">اختر النوع</h3>
-                <button class="close-btn" onclick="toggleAssetCard()">✕</button>
-            </div>
-            <div class="asset-options">
-                <button class="asset-btn" onclick="showAssetList('currencies')">العملات</button>
-                <button class="asset-btn" onclick="showAssetList('crypto')">العملات الرقمية</button>
-                <button class="asset-btn" onclick="showAssetList('commodities')">السلع</button>
-                <button class="asset-btn" onclick="showAssetList('stocks')">الأسهم</button>
             </div>
         </div>
     </div>
@@ -609,6 +584,42 @@
             </svg>
             <span>حول</span>
         </button>
+    </div>
+
+    <div class="card timeframe-card" id="timeframeCard">
+        <div class="card-header">
+            <h3 class="card-title">اختر الوقت</h3>
+            <button class="close-btn" onclick="toggleTimeframeCard()">✕</button>
+        </div>
+        <div class="timeframes-grid">
+            <button class="timeframe-btn" data-timeframe="5s">5s</button>
+            <button class="timeframe-btn" data-timeframe="10s">10s</button>
+            <button class="timeframe-btn" data-timeframe="15s">15s</button>
+            <button class="timeframe-btn" data-timeframe="30s">30s</button>
+            <button class="timeframe-btn active" data-timeframe="1m">1m</button>
+            <button class="timeframe-btn" data-timeframe="2m">2m</button>
+            <button class="timeframe-btn" data-timeframe="3m">3m</button>
+            <button class="timeframe-btn" data-timeframe="5m">5m</button>
+            <button class="timeframe-btn" data-timeframe="10m">10m</button>
+            <button class="timeframe-btn" data-timeframe="15m">15m</button>
+            <button class="timeframe-btn" data-timeframe="30m">30m</button>
+            <button class="timeframe-btn" data-timeframe="1h">1h</button>
+            <button class="timeframe-btn" data-timeframe="4h">4h</button>
+            <button class="timeframe-btn" data-timeframe="1d">1d</button>
+        </div>
+    </div>
+
+    <div class="card asset-type-card" id="assetCard">
+        <div class="card-header">
+            <h3 class="card-title">اختر النوع</h3>
+            <button class="close-btn" onclick="toggleAssetCard()">✕</button>
+        </div>
+        <div class="asset-options">
+            <button class="asset-btn" onclick="showAssetList('currencies')">العملات</button>
+            <button class="asset-btn" onclick="showAssetList('crypto')">العملات الرقمية</button>
+            <button class="asset-btn" onclick="showAssetList('commodities')">السلع</button>
+            <button class="asset-btn" onclick="showAssetList('stocks')">الأسهم</button>
+        </div>
     </div>
 
     <script>

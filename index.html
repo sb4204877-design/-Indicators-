@@ -15,51 +15,52 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #000000, #0a0a0a, #000000);
             color: #fff;
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
+            /* إزالة overflow: hidden لتمكين التمرير */
+            overflow-x: hidden;
+            /* زيادة حجم الخط العام */
+            font-size: 16px;
         }
 
         .header {
             background: rgba(10, 10, 10, 0.9);
             backdrop-filter: blur(10px);
-            padding: 8px 20px;
+            padding: 12px 20px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             text-align: center;
-            flex-shrink: 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
         }
 
         .header h1 {
-            font-size: 16px;
+            font-size: 18px;
             color: #00d2ff;
             font-weight: 500;
         }
 
         .page-content {
             display: none;
-            flex: 1;
-            padding-bottom: 70px;
+            padding: 20px 15px 100px 15px;
+            /* تمكين التمرير العمودي */
             overflow-y: auto;
         }
 
         .page-content.active {
-            display: flex;
-            flex-direction: column;
+            display: block;
         }
 
         .chart-container {
-            flex: 1;
             background: rgba(10, 10, 10, 0.5);
             margin: 0;
-            padding: 20px;
+            padding: 15px;
             position: relative;
             overflow: hidden;
+            margin-bottom: 15px;
         }
 
         .chart-placeholder {
             width: 100%;
-            height: 100%;
+            height: 300px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -73,18 +74,18 @@
         .bottom-controls {
             background: rgba(10, 10, 10, 0.95);
             backdrop-filter: blur(10px);
-            padding: 10px 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 12px 15px;
+            border-radius: 10px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-shrink: 0;
-            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            margin-bottom: 15px;
         }
 
         .left-controls, .right-controls {
             display: flex;
-            gap: 12px;
+            gap: 10px;
             align-items: center;
         }
 
@@ -92,10 +93,10 @@
             background: rgba(255, 255, 255, 0.08);
             border: none;
             color: #fff;
-            padding: 6px 10px;
+            padding: 8px 12px;
             border-radius: 6px;
             cursor: pointer;
-            font-size: 13px;
+            font-size: 15px;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
@@ -110,8 +111,8 @@
 
         .add-btn {
             background: linear-gradient(45deg, #00d2ff, #3a7bd5);
-            font-size: 16px;
-            padding: 4px 8px;
+            font-size: 17px;
+            padding: 6px 10px;
         }
 
         .zoom-controls {
@@ -123,11 +124,11 @@
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
             color: #fff;
-            width: 28px;
-            height: 28px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 16px;
             transition: all 0.3s ease;
         }
 
@@ -141,16 +142,16 @@
             align-items: center;
             gap: 6px;
             background: rgba(255, 255, 255, 0.08);
-            padding: 4px 8px;
-            border-radius: 4px;
+            padding: 6px 10px;
+            border-radius: 6px;
         }
 
         .currency-input {
             background: transparent;
             border: none;
             color: #fff;
-            font-size: 12px;
-            width: 80px;
+            font-size: 14px;
+            width: 100px;
             outline: none;
             text-align: center;
         }
@@ -160,11 +161,11 @@
         }
 
         .card {
-            position: absolute;
+            position: fixed;
             background: rgba(15, 15, 15, 0.98);
             backdrop-filter: blur(10px);
             border-radius: 10px;
-            padding: 12px;
+            padding: 15px;
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7);
             border: 1px solid rgba(255, 255, 255, 0.1);
             z-index: 1000;
@@ -172,33 +173,46 @@
             visibility: hidden;
             transform: translateY(8px);
             transition: all 0.3s ease;
+            width: 90%;
+            max-width: 320px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) translateY(8px);
         }
 
         .card.active {
             opacity: 1;
             visibility: visible;
-            transform: translateY(0);
+            transform: translate(-50%, -50%) translateY(0);
         }
 
         .timeframe-card {
-            bottom: 65px;
+            bottom: 80px;
             right: 15px;
-            min-width: 280px;
-            max-height: 350px;
-            overflow-y: auto;
+            left: auto;
+            transform: none;
+            width: auto;
+        }
+
+        .asset-type-card {
+            bottom: 80px;
+            right: 15px;
+            left: auto;
+            transform: none;
+            width: auto;
         }
 
         .card-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
-            padding-bottom: 6px;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .card-title {
-            font-size: 14px;
+            font-size: 16px;
             font-weight: 600;
             background: linear-gradient(45deg, #00d2ff, #3a7bd5);
             -webkit-background-clip: text;
@@ -209,11 +223,11 @@
             background: rgba(255, 50, 50, 0.2);
             border: none;
             color: #ff6b6b;
-            width: 22px;
-            height: 22px;
+            width: 26px;
+            height: 26px;
             border-radius: 50%;
             cursor: pointer;
-            font-size: 12px;
+            font-size: 14px;
             transition: all 0.3s ease;
         }
 
@@ -225,17 +239,17 @@
         .timeframes-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 6px;
+            gap: 8px;
         }
 
         .timeframe-btn {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
             color: #fff;
-            padding: 6px;
+            padding: 8px 4px;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 11px;
+            font-size: 13px;
             transition: all 0.3s ease;
         }
 
@@ -250,27 +264,21 @@
             font-weight: bold;
         }
 
-        .asset-type-card {
-            bottom: 65px;
-            right: 140px;
-            min-width: 200px;
-        }
-
         .asset-options {
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 8px;
         }
 
         .asset-btn {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
             color: #fff;
-            padding: 8px 10px;
+            padding: 10px 12px;
             border-radius: 5px;
             cursor: pointer;
             text-align: right;
-            font-size: 13px;
+            font-size: 14px;
             transition: all 0.3s ease;
             display: flex;
             justify-content: space-between;
@@ -325,7 +333,7 @@
             right: 0;
             background: rgba(5, 5, 5, 0.98);
             backdrop-filter: blur(10px);
-            padding: 10px 0;
+            padding: 12px 0;
             border-top: 1px solid rgba(0, 210, 255, 0.2);
             box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.6);
             z-index: 2000;
@@ -341,11 +349,11 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 4px;
-            padding: 8px 20px;
+            gap: 5px;
+            padding: 8px 15px;
             cursor: pointer;
             transition: all 0.3s ease;
-            font-size: 12px;
+            font-size: 13px;
         }
 
         .nav-btn:hover {
@@ -359,8 +367,8 @@
         }
 
         .nav-btn svg {
-            width: 24px;
-            height: 24px;
+            width: 26px;
+            height: 26px;
             fill: currentColor;
             transition: transform 0.3s ease;
         }
@@ -370,8 +378,8 @@
         }
 
         .signals-section, .about-section {
-            padding: 30px 20px;
-            max-width: 800px;
+            padding: 20px 15px;
+            max-width: 100%;
             margin: 0 auto;
             text-align: center;
         }
@@ -379,30 +387,32 @@
         .signals-section h2, .about-section h2 {
             color: #00d2ff;
             margin-bottom: 20px;
-            font-size: 24px;
+            font-size: 26px;
         }
 
         .signals-section p, .about-section p {
             color: rgba(255, 255, 255, 0.7);
             line-height: 1.8;
             margin-bottom: 15px;
+            font-size: 16px;
         }
 
         .info-box {
             background: rgba(0, 210, 255, 0.1);
             border: 1px solid rgba(0, 210, 255, 0.3);
             border-radius: 10px;
-            padding: 20px;
+            padding: 18px;
             margin: 20px 0;
         }
 
         .info-box h3 {
             color: #00d2ff;
             margin-bottom: 10px;
+            font-size: 18px;
         }
 
         .timeframe-card::-webkit-scrollbar {
-            width: 5px;
+            width: 6px;
         }
 
         .timeframe-card::-webkit-scrollbar-track {
@@ -415,17 +425,42 @@
             border-radius: 3px;
         }
 
+        /* تعديلات موبايل */
         @media (max-width: 600px) {
-            .bottom-nav {
-                padding: 8px 0;
+            body {
+                font-size: 17px;
             }
+            
+            .header h1 {
+                font-size: 20px;
+            }
+            
+            .chart-placeholder {
+                height: 250px;
+            }
+            
+            .bottom-controls {
+                flex-direction: column;
+                gap: 12px;
+                align-items: stretch;
+            }
+            
+            .left-controls, .right-controls {
+                justify-content: center;
+            }
+            
+            .timeframes-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
             .nav-btn {
-                font-size: 10px;
-                padding: 6px 10px;
+                font-size: 12px;
+                padding: 8px 10px;
             }
+            
             .nav-btn svg {
-                width: 20px;
-                height: 20px;
+                width: 24px;
+                height: 24px;
             }
         }
     </style>
@@ -443,7 +478,7 @@
             <div class="chart-placeholder">
                 <h2>📊 منطقة الشارت</h2>
                 <p>سيتم عرض الشموع هنا بعد الاتصال بالـ API</p>
-                <p style="margin-top: 20px; font-size: 14px; opacity: 0.6;">
+                <p style="margin-top: 20px; font-size: 15px; opacity: 0.6;">
                     الفريم: <span id="currentTimeframeDisplay" style="color:#00d2ff">1m</span> | 
                     العملة: <span id="currentAssetDisplay" style="color:#3a7bd5">BTC/USDT</span>
                 </p>
@@ -517,7 +552,7 @@
                 <h3>📊 تحليل فني</h3>
                 <p>احصل على تحليل فني مفصل لجميع الأزواج مع نقاط الدعم والمقاومة.</p>
             </div>
-            <p style="margin-top: 30px; opacity: 0.5;">الإشارات ستكون متاحة قريباً...</p>
+            <p style="margin-top: 30px; opacity: 0.5; font-size: 16px;">الإشارات ستكون متاحة قريباً...</p>
         </div>
     </div>
 
@@ -541,7 +576,7 @@
                 <p>البريد: info@trading-platform.com<br>
                 الهاتف: +123 456 7890</p>
             </div>
-            <p style="margin-top: 30px; font-size: 12px; opacity: 0.4;">
+            <p style="margin-top: 30px; font-size: 14px; opacity: 0.4;">
                 &copy; 2025 منصة تداول حديثة. جميع الحقوق محفوظة.
             </p>
         </div>
@@ -668,9 +703,11 @@
             const tempCard = document.createElement('div');
             tempCard.className = 'card asset-type-card';
             tempCard.id = 'tempAssetCard';
-            tempCard.style.bottom = '65px';
-            tempCard.style.right = '20px';
-            tempCard.style.minWidth = '220px';
+            tempCard.style.bottom = '80px';
+            tempCard.style.right = '15px';
+            tempCard.style.left = '15px';
+            tempCard.style.width = 'auto';
+            tempCard.style.transform = 'none';
             
             let listHTML = '<div class="card-header"><h3 class="card-title">اختر ' + getAssetTypeName(type) + '</h3><button class="close-btn" onclick="closeAllCards()">✕</button></div><div class="asset-options">';
             assets.forEach(asset => {
@@ -716,10 +753,10 @@
                 loading.classList.remove('active');
                 placeholder.style.opacity = '1';
                 placeholder.innerHTML = `
-                    <h2>📈 ${currentAsset}</h2>
+                    <h2 style="font-size:18px;">📈 ${currentAsset}</h2>
                     <p>الفريم: <span style="color:#00d2ff">${currentTimeframe}</span></p>
                     <p>تم تحديث البيانات بنجاح</p>
-                    <p style="margin-top: 20px; font-size: 14px; opacity: 0.6;">
+                    <p style="margin-top: 20px; font-size: 15px; opacity: 0.6;">
                         آخر تحديث: ${new Date().toLocaleTimeString('ar')}
                     </p>
                 `;

@@ -1,1416 +1,1574 @@
 
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuHub</title>
+    <title>QuHub - Automated Trading Bot</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* ==========================================
+           CSS VARIABLES & RESET
+           ========================================== */
+        :root {
+            --dark-bg: #0a0a0a;
+            --darker-bg: #050505;
+            --accent-blue: #1e3a8a;
+            --dark-accent: #0c4a6e;
+            --light-text: #f0f9ff;
+            --gray-text: #cbd5e1;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+        }
+        
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-        }
-
-        body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #000000, #0a0a0a, #000000);
-            color: #fff;
-            overflow-x: hidden;
-            font-size: 16px;
         }
-
-        /* حذف الهيدر بالكامل */
-
-        /* شريط التحكم - يظهر فقط في الصفحة الرئيسية */
-        .control-bar {
-            background: rgba(10, 10, 10, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 10px 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            position: fixed;
-            bottom: 60px; /* تحت الـ bottom-nav */
-            left: 0;
-            right: 0;
-            z-index: 1999;
-            box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.5);
-            height: 60px; /* تحديد ارتفاع ثابت */
-            display: none; /* مخفي افتراضيًا */
-        }
-
-        .control-bar.visible {
-            display: flex; /* يظهر فقط في الصفحة الرئيسية */
-        }
-
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(5, 5, 5, 0.98);
-            backdrop-filter: blur(10px);
-            padding: 12px 0;
-            border-top: 1px solid rgba(0, 210, 255, 0.2);
-            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.6);
-            z-index: 2000;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            height: 60px; /* تحديد ارتفاع ثابت */
-        }
-
-        .control-left, .control-right {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .icon-btn {
-            background: rgba(255, 255, 255, 0.08);
-            border: none;
-            color: #fff;
-            padding: 8px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 15px;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .icon-btn:hover {
-            background: rgba(255, 255, 255, 0.15);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(0, 150, 255, 0.2);
-        }
-
-        .add-btn {
-            background: linear-gradient(45deg, #00d2ff, #3a7bd5);
-            font-size: 17px;
-            padding: 6px 10px;
-        }
-
-        .zoom-controls {
-            display: flex;
-            gap: 5px;
-        }
-
-        .zoom-btn {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #fff;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 16px;
-            transition: all 0.3s ease;
-        }
-
-        .zoom-btn:hover {
-            background: rgba(0, 200, 255, 0.2);
-            transform: scale(1.1);
-        }
-
-        .currency-display-group {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            background: rgba(255, 255, 255, 0.08);
-            padding: 6px 10px;
-            border-radius: 6px;
-        }
-
-        .currency-display {
-            color: #fff;
-            font-size: 14px;
-            min-width: 80px;
-            text-align: center;
-        }
-
-        .page-content {
-            padding: 15px 15px 120px 15px; /* من الأعلى والأسفل - 120px = 60px * 2 */
-            overflow-y: auto;
-            display: none;
-        }
-
-        .page-content.active {
-            display: block;
-        }
-
-        .chart-container {
-            background: rgba(10, 10, 10, 0.5);
-            margin: 0 0 15px 0;
-            padding: 15px;
-            position: relative;
-            overflow: hidden;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            height: calc(100vh - 120px); /* يمتد من الأعلى إلى الشريطين في الأسفل */
-        }
-
-        .chart-placeholder {
-            width: 100%;
-            height: 100%;
+        
+        body {
+            background-color: var(--dark-bg);
+            color: var(--light-text);
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            border: 1px dashed rgba(0, 210, 255, 0.2);
-            border-radius: 10px;
-            background: rgba(0, 0, 0, 0.4);
-            color: rgba(255, 255, 255, 0.8);
         }
-
-        .loading {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            display: none;
-        }
-
-        .loading.active {
-            display: block;
-        }
-
-        .spinner {
-            width: 35px;
-            height: 35px;
-            border: 3px solid rgba(255, 255, 255, 0.1);
-            border-top: 3px solid #00d2ff;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .card {
+        
+        /* ==========================================
+           NOTIFICATION SYSTEM
+           ========================================== */
+        .notification-container {
             position: fixed;
-            background: rgba(15, 15, 15, 0.98);
-            backdrop-filter: blur(10px);
-            border-radius: 10px;
-            padding: 15px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(8px);
-            transition: all 0.3s ease;
-            width: 90%;
-            max-width: 320px;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) translateY(8px);
-        }
-
-        .card.active {
-            opacity: 1;
-            visibility: visible;
-            transform: translate(-50%, -50%) translateY(0);
-        }
-
-        .timeframe-card {
-            bottom: 120px; /* 60px (control-bar height) + 60px (bottom-nav height) */
-            right: 15px;
-            left: auto;
-            transform: none;
-            width: auto;
-            max-height: 70vh;
-            overflow-y: auto;
-        }
-
-        .asset-type-card {
-            bottom: 120px; /* 60px (control-bar height) + 60px (bottom-nav height) */
-            right: 15px;
-            left: auto;
-            transform: none;
-            width: auto;
-            max-height: 70vh;
-            overflow-y: auto;
-        }
-
-        .card-header {
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            flex-direction: column;
+            gap: 10px;
+            max-width: 350px;
         }
-
-        .card-title {
-            font-size: 16px;
-            font-weight: 600;
-            background: linear-gradient(45deg, #00d2ff, #3a7bd5);
+        
+        .notification {
+            background: var(--darker-bg);
+            border-radius: 12px;
+            padding: 15px 20px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+            border-left: 4px solid var(--info);
+            animation: slideIn 0.3s ease-out;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            backdrop-filter: blur(10px);
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .notification.success { border-left-color: var(--success); }
+        .notification.error { border-left-color: var(--danger); }
+        .notification.warning { border-left-color: var(--warning); }
+        .notification.info { border-left-color: var(--info); }
+        
+        /* ==========================================
+           LANDING PAGE
+           ========================================== */
+        .landing-page {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .logo {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: var(--accent-blue);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .app-title {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            background: linear-gradient(to right, #3b82f6, #1e40af);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            font-weight: 700;
         }
-
-        .close-btn {
-            background: rgba(255, 50, 50, 0.2);
-            border: none;
-            color: #ff6b6b;
-            width: 26px;
-            height: 26px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.3s ease;
+        
+        .app-description {
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 15px auto 25px;
+            color: var(--gray-text);
+            line-height: 1.7;
         }
-
-        .close-btn:hover {
-            background: rgba(255, 50, 50, 0.4);
-            transform: rotate(90deg);
-        }
-
-        .timeframes-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-        }
-
-        .timeframe-btn {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #fff;
-            padding: 8px 4px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 13px;
-            transition: all 0.3s ease;
-        }
-
-        .timeframe-btn:hover {
-            background: rgba(0, 200, 255, 0.15);
-            transform: scale(1.05);
-        }
-
-        .timeframe-btn.active {
-            background: linear-gradient(45deg, #00d2ff, #3a7bd5);
-            border-color: transparent;
-            font-weight: bold;
-        }
-
-        .asset-options {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .asset-btn {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #fff;
-            padding: 10px 12px;
-            border-radius: 5px;
-            cursor: pointer;
-            text-align: right;
-            font-size: 14px;
-            transition: all 0.3s ease;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .asset-btn:hover {
-            background: rgba(0, 200, 255, 0.15);
-            transform: translateX(-5px);
-        }
-
-        .asset-btn::after {
-            content: "←";
-            font-size: 16px;
-            transition: transform 0.3s ease;
-        }
-
-        .asset-btn:hover::after {
-            transform: translateX(-5px);
-        }
-
-        .nav-btn {
-            background: transparent;
-            border: none;
-            color: rgba(255, 255, 255, 0.7);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-            padding: 8px 15px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 13px;
-        }
-
-        .nav-btn:hover {
-            color: #00d2ff;
-            transform: translateY(-3px);
-        }
-
-        .nav-btn.active {
-            color: #00d2ff;
-            text-shadow: 0 0 10px rgba(0, 210, 255, 0.5);
-        }
-
-        .nav-btn svg {
-            width: 26px;
-            height: 26px;
-            fill: currentColor;
-            transition: transform 0.3s ease;
-        }
-
-        .nav-btn:hover svg {
-            transform: scale(1.1);
-        }
-
-        .signals-section, .about-section, .bot-section, .profile-section, .login-section {
-            padding: 20px 15px;
-            max-width: 100%;
-            margin: 0 auto;
-            text-align: center;
-        }
-
-        .signals-section h2, .about-section h2, .bot-section h2, .profile-section h2, .login-section h2 {
-            color: #00d2ff;
-            margin-bottom: 20px;
-            font-size: 26px;
-        }
-
-        .signals-section p, .about-section p, .bot-section p, .profile-section p, .login-section p {
-            color: rgba(255, 255, 255, 0.7);
-            line-height: 1.8;
-            margin-bottom: 15px;
-            font-size: 16px;
-        }
-
-        .info-box {
-            background: rgba(0, 210, 255, 0.1);
-            border: 1px solid rgba(0, 210, 255, 0.3);
-            border-radius: 10px;
-            padding: 18px;
-            margin: 20px 0;
-        }
-
-        .info-box h3 {
-            color: #00d2ff;
-            margin-bottom: 10px;
-            font-size: 18px;
-        }
-
-        .timeframe-card::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .timeframe-card::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 3px;
-        }
-
-        .timeframe-card::-webkit-scrollbar-thumb {
-            background: rgba(0, 210, 255, 0.3);
-            border-radius: 3px;
-        }
-
-        /* بطاقة الإشارة */
-        .signal-card {
-            background: rgba(255, 0, 0, 0.2);
-            border: 1px solid rgba(255, 0, 0, 0.4);
-            border-radius: 10px;
-            padding: 15px;
-            margin: 15px 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: all 0.3s ease;
-        }
-
-        .signal-card.buy {
-            background: rgba(0, 255, 0, 0.2);
-            border-color: rgba(0, 255, 0, 0.4);
-        }
-
-        .signal-info {
-            text-align: right;
-        }
-
-        .signal-asset {
-            font-weight: bold;
-            font-size: 18px;
-            margin-bottom: 5px;
-        }
-
-        .signal-action {
-            font-size: 14px;
-            opacity: 0.8;
-        }
-
-        .signal-timer {
-            width: 40px;
-            height: 40px;
-            border: 3px solid rgba(255, 255, 255, 0.2);
-            border-top: 3px solid #00d2ff;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        /* صفحة البوت */
-        .bot-config {
-            background: rgba(15, 15, 15, 0.7);
-            border-radius: 10px;
+        
+        .repo-section {
+            background: rgba(30, 58, 138, 0.2);
+            border: 1px solid var(--accent-blue);
+            border-radius: 12px;
             padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .balance-display {
-            display: flex;
-            justify-content: space-between;
-            background: rgba(0, 210, 255, 0.1);
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            font-size: 14px;
-        }
-
-        .config-group {
-            margin-bottom: 15px;
-            text-align: right;
-        }
-
-        .config-group label {
-            display: block;
-            margin-bottom: 5px;
-            color: #00d2ff;
-        }
-
-        .config-group input, .config-group select, .config-group button {
+            margin: 20px 0;
             width: 100%;
-            padding: 10px;
-            border-radius: 6px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            background: rgba(255, 255, 255, 0.05);
-            color: #fff;
-            font-size: 14px;
+            max-width: 700px;
+            text-align: left;
         }
-
-        .strategy-display {
-            background: rgba(0, 210, 255, 0.2);
-            padding: 10px;
-            border-radius: 6px;
-            margin-top: 10px;
-            font-size: 14px;
-        }
-
-        .action-buttons {
+        
+        .command-row {
             display: flex;
+            align-items: center;
             gap: 10px;
-            margin-top: 20px;
-        }
-
-        .action-buttons button {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .start-btn {
-            background: linear-gradient(45deg, #00d2ff, #3a7bd5);
-            color: white;
-        }
-
-        .stop-btn {
-            background: linear-gradient(45deg, #ff416c, #ff4b2b);
-            color: white;
-        }
-
-        .trades-list {
-            margin-top: 30px;
-        }
-
-        .trade-item {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 8px;
-            padding: 15px;
             margin: 10px 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            padding: 10px;
+            background: var(--dark-bg);
+            border-radius: 8px;
         }
-
-        .trade-profit {
-            color: #00ff00;
+        
+        .command-text {
+            flex: 1;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: #93c5fd;
+            overflow-x: auto;
         }
-
-        .trade-loss {
-            color: #ff0000;
+        
+        .copy-btn {
+            background: var(--dark-accent);
+            border: 1px solid var(--accent-blue);
+            color: var(--light-text);
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s;
         }
-
-        /* صفحة البروفايل */
-        .profile-header {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 30px;
+        
+        .copy-btn:hover {
+            background: var(--accent-blue);
         }
-
-        .profile-avatar {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: linear-gradient(45deg, #00d2ff, #3a7bd5);
+        
+        .features {
+            background: rgba(30, 58, 138, 0.2);
+            border: 1px solid var(--accent-blue);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            width: 100%;
+            max-width: 600px;
+        }
+        
+        .features ul {
+            padding-left: 20px;
+            text-align: left;
+        }
+        
+        .btn {
+            background: linear-gradient(to right, #3b82f6, #1d4ed8);
+            color: white;
+            border: none;
+            padding: 14px 40px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 12px 0;
+            transition: all 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            gap: 10px;
+            font-weight: 600;
         }
-
-        .profile-info h3 {
-            font-size: 20px;
-            margin-bottom: 5px;
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(30, 64, 175, 0.5);
         }
-
-        .profile-info p {
-            opacity: 0.7;
-            font-size: 14px;
+        
+        /* ==========================================
+           MODALS
+           ========================================== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
         }
-
-        .profile-cards {
+        
+        .modal-card {
+            background: var(--darker-bg);
+            border: 1px solid var(--accent-blue);
+            border-radius: 12px;
+            padding: 30px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+        
+        @keyframes modalSlideIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            background: var(--dark-bg);
+            border: 1px solid var(--accent-blue);
+            border-radius: 8px;
+            color: var(--light-text);
+            font-size: 1rem;
+        }
+        
+        /* ==========================================
+           MAIN APP
+           ========================================== */
+        .main-app {
+            display: none;
+            flex-direction: column;
+            height: 100vh;
+        }
+        
+        .header {
+            background: var(--darker-bg);
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--accent-blue);
+        }
+        
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+        
+        .page {
+            display: none;
+        }
+        
+        .page.active {
+            display: block;
+        }
+        
+        .balance-cards {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 15px;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
         }
-
-        .profile-card {
-            background: rgba(0, 210, 255, 0.1);
+        
+        .balance-card {
+            background: var(--darker-bg);
+            border: 1px solid var(--accent-blue);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .stat-card {
+            background: var(--darker-bg);
+            border: 1px solid var(--accent-blue);
             border-radius: 10px;
             padding: 15px;
             text-align: center;
         }
-
-        .profile-card h4 {
-            color: #00d2ff;
-            margin-bottom: 10px;
-            font-size: 16px;
+        
+        /* ==========================================
+           TRADING PAGE
+           ========================================== */
+        .account-toggle {
+            display: flex;
+            justify-content: center;
+            margin: 15px 0;
         }
-
-        .profile-card p {
-            font-size: 18px;
-            font-weight: bold;
+        
+        .toggle-btn {
+            background: var(--dark-accent);
+            border: 1px solid var(--accent-blue);
+            color: var(--gray-text);
+            padding: 8px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            margin: 0 5px;
+            font-size: 0.85rem;
+            transition: all 0.3s;
         }
-
-        .profile-form {
-            background: rgba(15, 15, 15, 0.7);
+        
+        .toggle-btn.active {
+            background: var(--accent-blue);
+            color: white;
+        }
+        
+        /* ==========================================
+           SIGNALS
+           ========================================== */
+        .signals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 15px;
+        }
+        
+        .signal-card {
             border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
+            overflow: hidden;
+            border: 1px solid var(--accent-blue);
         }
-
-        .logout-btn {
-            background: linear-gradient(45deg, #ff416c, #ff4b2b);
-            color: white;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 20px;
+        
+        .signal-green {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: var(--success);
         }
-
-        .login-btn {
-            background: linear-gradient(45deg, #00d2ff, #3a7bd5);
-            color: white;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 20px;
+        
+        .signal-red {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: var(--danger);
         }
-
-        .hidden-content {
+        
+        /* ==========================================
+           BOTTOM NAV
+           ========================================== */
+        .bottom-nav {
             display: none;
+            justify-content: space-around;
+            background: var(--darker-bg);
+            padding: 10px 0;
+            border-top: 1px solid var(--accent-blue);
         }
-
-        @media (max-width: 600px) {
-            body {
-                font-size: 17px;
-            }
-            
-            .control-bar {
-                padding: 8px 12px;
-                height: 50px; /* ارتفاع اقل للشاشات الصغيرة */
-            }
-            
-            .bottom-nav {
-                height: 50px; /* ارتفاع اقل للشاشات الصغيرة */
-            }
-            
-            .icon-btn {
-                font-size: 14px;
-                padding: 6px 10px;
-            }
-            
-            .zoom-btn {
-                width: 28px;
-                height: 28px;
-                font-size: 14px;
-            }
-            
-            .currency-display {
-                font-size: 13px;
-                min-width: 70px;
-            }
-            
-            .timeframes-grid {
-                grid-template-columns: repeat(3, 1fr);
-            }
-            
-            .nav-btn {
-                font-size: 12px;
-                padding: 6px 10px;
-            }
-            
-            .nav-btn svg {
-                width: 24px;
-                height: 24px;
-            }
-            
-            .profile-cards {
-                grid-template-columns: 1fr;
-            }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--gray-text);
+            text-decoration: none;
+            font-size: 0.75rem;
+            cursor: pointer;
+            padding: 5px 10px;
+        }
+        
+        .nav-item.active {
+            color: var(--info);
+        }
+        
+        /* ==========================================
+           FOOTER
+           ========================================== */
+        .footer {
+            background: var(--darker-bg);
+            padding: 15px;
+            text-align: center;
+            border-top: 1px solid var(--accent-blue);
+            font-size: 0.75rem;
+            color: var(--gray-text);
+            margin-top: auto;
+        }
+        
+        .social-icons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 10px 0;
+        }
+        
+        .social-icon {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--dark-accent);
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+        
+        .social-icon:hover {
+            background: var(--accent-blue);
+            transform: translateY(-3px);
+        }
+        
+        .footer-links {
+            margin: 10px 0;
+        }
+        
+        .footer-link {
+            color: #93c5fd;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+        
+        .footer-link:hover {
+            color: var(--info);
+            text-decoration: underline;
+        }
+        
+        /* ==========================================
+           SUPPORT BUTTON & CHAT
+           ========================================== */
+        .support-btn {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            background: linear-gradient(to right, var(--accent-blue), var(--dark-accent));
+            color: white;
+            border: none;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            z-index: 1000;
+            transition: all 0.3s;
+        }
+        
+        .support-chat {
+            position: fixed;
+            bottom: 160px;
+            right: 20px;
+            width: 320px;
+            height: 400px;
+            background: var(--darker-bg);
+            border: 1px solid var(--accent-blue);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            display: none;
+            flex-direction: column;
+            z-index: 1001;
         }
     </style>
 </head>
 <body>
-    <!-- صفحة تسجيل الدخول -->
-    <div id="loginPage" class="page-content active">
-        <div class="login-section">
-            <h2>🔐 تسجيل الدخول</h2>
-            <p>الرجاء إدخال التوكن المولد من التطبيق لتفعيل الحساب.</p>
+    <!-- ==========================================
+         NOTIFICATION CONTAINER
+         ========================================== -->
+    <div class="notification-container" id="notificationContainer"></div>
+    
+    <!-- ==========================================
+         LANDING PAGE (Always visible with footer)
+         ========================================== -->
+    <div class="landing-page" id="landingPage">
+        <div class="logo">
+            <i class="fas fa-robot"></i>
+        </div>
+        <h1 class="app-title">QuHub Trading Bot</h1>
+        <p class="app-description">
+            An automated trading bot and signals system for Quotex platform. Choose from 10 developed strategies and 100+ general strategies to execute trades or receive signals without automatic trading.
+        </p>
+        
+        <!-- Repository Setup Commands -->
+        <div class="repo-section">
+            <h2><i class="fas fa-code"></i> Quick Setup Commands</h2>
             
-            <div class="profile-form">
-                <div class="config-group">
-                    <label for="loginToken">التوكن</label>
-                    <input type="text" id="loginToken" placeholder="أدخل التوكن المولد من التطبيق">
-                </div>
-                <button class="login-btn" onclick="login()">تسجيل الدخول</button>
+            <div class="command-row">
+                <span class="command-text" id="installPython">pip install python git</span>
+                <button class="copy-btn" onclick="copyCommand('installPython')">
+                    <i class="fas fa-copy"></i> Copy
+                </button>
+            </div>
+            
+            <div class="command-row">
+                <span class="command-text" id="cloneRepo">git clone https://github.com/tradehub/quotex-bot.git</span>
+                <button class="copy-btn" onclick="copyCommand('cloneRepo')">
+                    <i class="fas fa-copy"></i> Copy
+                </button>
+            </div>
+            
+            <div class="command-row">
+                <span class="command-text" id="enterDir">cd quotex-bot</span>
+                <button class="copy-btn" onclick="copyCommand('enterDir')">
+                    <i class="fas fa-copy"></i> Copy
+                </button>
+            </div>
+            
+            <div class="command-row">
+                <span class="command-text" id="runInstall">python install.py</span>
+                <button class="copy-btn" onclick="copyCommand('runInstall')">
+                    <i class="fas fa-copy"></i> Copy
+                </button>
+            </div>
+            
+            <div class="command-row">
+                <span class="command-text" id="runBot">python bot.py --api-key YOUR_TOKEN_HERE</span>
+                <button class="copy-btn" onclick="copyCommand('runBot')">
+                    <i class="fas fa-copy"></i> Copy
+                </button>
             </div>
         </div>
-    </div>
-
-    <!-- الصفحة الرئيسية (التداول) -->
-    <div id="homePage" class="page-content">
-        <div class="chart-container">
-            <div class="loading" id="loading">
-                <div class="spinner"></div>
-            </div>
-            <div class="chart-placeholder">
-                <h2>📊 منطقة الشارت</h2>
-                <p>سيتم عرض الشموع هنا بعد الاتصال بالـ API</p>
-                <p style="margin-top: 20px; font-size: 15px; opacity: 0.6;">
-                    الفريم: <span id="currentTimeframeDisplay" style="color:#00d2ff">1m</span> | 
-                    العملة: <span id="currentAssetDisplay" style="color:#3a7bd5">USD/EUR</span>
-                </p>
-            </div>
+        
+        <!-- Features -->
+        <div class="features">
+            <h2><i class="fas fa-star"></i> Key Features</h2>
+            <ul>
+                <li>10 Professional trading strategies</li>
+                <li>100+ General signal strategies</li>
+                <li>Auto-trading & signals-only modes</li>
+                <li>Real-time balance monitoring</li>
+                <li>Demo & Live account support</li>
+                <li>24/7 Support chat</li>
+                <li>Advanced risk management</li>
+            </ul>
         </div>
+        
+        <!-- Telegram Follow Button -->
+        <button class="btn" id="followBtn">
+            <i class="fab fa-telegram"></i> Follow on Telegram & Start
+        </button>
     </div>
-
-    <!-- صفحة الإشارات -->
-    <div id="signalsPage" class="page-content">
-        <div class="signals-section">
-            <h2>📈 صفحة الإشارات</h2>
-            <p>هنا ستظهر إشارات التداول الفورية من البوت الخاص بك.</p>
-            
-            <!-- بطاقة الإشارة 1 -->
-            <div class="signal-card buy">
-                <div class="signal-info">
-                    <div class="signal-asset">EUR/USD</div>
-                    <div class="signal-action">شراء</div>
-                </div>
-                <div class="signal-timer"></div>
-            </div>
-            
-            <!-- بطاقة الإشارة 2 -->
-            <div class="signal-card">
-                <div class="signal-info">
-                    <div class="signal-asset">BTC/USDT</div>
-                    <div class="signal-action">بيع</div>
-                </div>
-                <div class="signal-timer"></div>
-            </div>
-            
-            <!-- بطاقة الإشارة 3 -->
-            <div class="signal-card buy">
-                <div class="signal-info">
-                    <div class="signal-asset">GOLD/USD</div>
-                    <div class="signal-action">شراء</div>
-                </div>
-                <div class="signal-timer"></div>
-            </div>
-            
-            <!-- بطاقة الإشارة 4 -->
-            <div class="signal-card">
-                <div class="signal-info">
-                    <div class="signal-asset">AAPL</div>
-                    <div class="signal-action">بيع</div>
-                </div>
-                <div class="signal-timer"></div>
-            </div>
-            
-            <!-- بطاقة الإشارة 5 -->
-            <div class="signal-card buy">
-                <div class="signal-info">
-                    <div class="signal-asset">ETH/USDT</div>
-                    <div class="signal-action">شراء</div>
-                </div>
-                <div class="signal-timer"></div>
-            </div>
-            
-            <!-- بطاقة الإشارة 6 -->
-            <div class="signal-card">
-                <div class="signal-info">
-                    <div class="signal-asset">USD/JPY</div>
-                    <div class="signal-action">بيع</div>
-                </div>
-                <div class="signal-timer"></div>
-            </div>
-            
-            <!-- بطاقة الإشارة 7 -->
-            <div class="signal-card buy">
-                <div class="signal-info">
-                    <div class="signal-asset">SILVER/USD</div>
-                    <div class="signal-action">شراء</div>
-                </div>
-                <div class="signal-timer"></div>
-            </div>
-            
-            <!-- بطاقة الإشارة 8 -->
-            <div class="signal-card">
-                <div class="signal-info">
-                    <div class="signal-asset">GOOGL</div>
-                    <div class="signal-action">بيع</div>
-                </div>
-                <div class="signal-timer"></div>
-            </div>
-            
-            <!-- بطاقة الإشارة 9 -->
-            <div class="signal-card buy">
-                <div class="signal-info">
-                    <div class="signal-asset">BNB/USDT</div>
-                    <div class="signal-action">شراء</div>
-                </div>
-                <div class="signal-timer"></div>
-            </div>
-            
-            <!-- بطاقة الإشارة 10 -->
-            <div class="signal-card">
-                <div class="signal-info">
-                    <div class="signal-asset">EUR/GBP</div>
-                    <div class="signal-action">بيع</div>
-                </div>
-                <div class="signal-timer"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- صفحة البوت -->
-    <div id="botPage" class="page-content">
-        <div class="bot-section">
-            <h2>🤖 التداول الآلي</h2>
-            <p>قم بتكوين إعدادات البوت الخاص بك للبدء في التداول التلقائي.</p>
-            
-            <div class="bot-config">
-                <!-- عرض الرصيد - مخفي حتى تسجيل الدخول -->
-                <div class="balance-display hidden-content" id="balanceDisplay">
-                    <div>الرصيد التجريبي: <strong id="demoBalance">$10,000</strong></div>
-                    <div>الرصيد الحقيقي: <strong id="realBalance">$2,500</strong></div>
-                </div>
-                
-                <!-- مبلغ الصفقة -->
-                <div class="config-group">
-                    <label for="tradeAmount">مبلغ الصفقة ($)</label>
-                    <input type="number" id="tradeAmount" value="100" placeholder="أدخل مبلغ الصفقة">
-                </div>
-                
-                <!-- استراتيجية التداول -->
-                <div class="config-group">
-                    <label>استراتيجية التداول</label>
-                    <button class="icon-btn" onclick="showStrategies()">عرض قائمة الاستراتيجيات</button>
-                    <div class="strategy-display" id="selectedStrategy">لم يتم اختيار استراتيجية</div>
-                </div>
-                
-                <!-- هدف الربح -->
-                <div class="config-group">
-                    <label for="takeProfit">هدف الربح ($)</label>
-                    <input type="number" id="takeProfit" value="200" placeholder="أدخل هدف الربح">
-                </div>
-                
-                <!-- وقف الخسارة -->
-                <div class="config-group">
-                    <label for="stopLoss">وقف الخسارة ($)</label>
-                    <input type="number" id="stopLoss" value="100" placeholder="أدخل وقف الخسارة">
-                </div>
-                
-                <!-- أزرار الحفظ والبدء -->
-                <div class="action-buttons">
-                    <button class="start-btn" id="startTradingBtn" onclick="toggleTrading()">ابدأ التداول</button>
-                    <button onclick="saveSettings()">حفظ الإعدادات</button>
-                </div>
-            </div>
-            
-            <!-- صفقات التداول -->
-            <div class="trades-list" id="tradesList" style="display: none;">
-                <h3>الصفقات الجارية والمنتهية</h3>
-                <div class="trade-item">
-                    <div>EUR/USD - شراء</div>
-                    <div class="trade-profit">+$150</div>
-                </div>
-                <div class="trade-item">
-                    <div>BTC/USDT - بيع</div>
-                    <div class="trade-loss">-$75</div>
-                </div>
-                <div class="trade-item">
-                    <div>GOLD/USD - شراء</div>
-                    <div class="trade-profit">+$200</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- صفحة حول -->
-    <div id="aboutPage" class="page-content">
-        <div class="about-section">
-            <h2>ℹ️ كيفية التشغيل</h2>
-            <p>اتبع الخطوات التالية لتشغيل بوت QuHub الخاص بك:</p>
-            
-            <div class="info-box">
-                <h3>📱 للمستخدمين على أندرويد:</h3>
-                <p>1. قم بتنزيل تطبيق Termux من متجر Google Play.<br>
-                2. افتح التطبيق وقم بتشغيل الأوامر التالية:<br>
-                <code>pkg install git python</code><br>
-                <code>git clone https://github.com/your-repo/quhub-bot.git</code><br>
-                <code>cd quhub-bot && python main.py</code><br>
-                3. سيولد التطبيق توكن فريد، قم بنسخه.<br>
-                4. الصق التوكن في صفحة البروفايل في هذا الموقع لتفعيل البوت.</p>
-            </div>
-            
-            <div class="info-box">
-                <h3>💻 للمستخدمين على ويندوز/لينكس:</h3>
-                <p>1. افتح الطرفية (Terminal/CMD).<br>
-                2. قم بتشغيل الأوامر التالية:<br>
-                <code>git clone https://github.com/your-repo/quhub-bot.git</code><br>
-                <code>cd quhub-bot</code><br>
-                <code>python3 -m venv venv && source venv/bin/activate</code> (لينكس/ماك)<br>
-                <code>python -m venv venv && venv\Scripts\activate</code> (ويندوز)<br>
-                <code>pip install -r requirements.txt</code><br>
-                <code>python main.py</code><br>
-                3. سيولد التطبيق توكن فريد، قم بنسخه.<br>
-                4. الصق التوكن في صفحة البروفايل في هذا الموقع لتفعيل البوت.</p>
-            </div>
-            
-            <div class="info-box">
-                <h3>🚀 المميزات:</h3>
-                <p>• إشارات تداول فورية<br>
-                • تحليل فني متقدم<br>
-                • استراتيجيات تداول متنوعة<br>
-                • مراقبة الصفقات في الوقت الحقيقي<br>
-                • واجهة مستخدم سهلة وبسيطة</p>
-            </div>
-            
-            <p style="margin-top: 30px; font-size: 14px; opacity: 0.4;">
-                &copy; 2025 QuHub. جميع الحقوق محفوظة.
+    
+    <!-- ==========================================
+         TOKEN INPUT MODAL
+         ========================================== -->
+    <div class="modal-overlay" id="tokenModal">
+        <div class="modal-card">
+            <h2><i class="fas fa-key"></i> Enter Your API Token</h2>
+            <p style="color: var(--gray-text); margin-bottom: 20px; font-size: 0.9rem;">
+                Copy the token generated after bot installation
             </p>
+            <div class="form-group">
+                <label for="apiKey">API Token</label>
+                <input type="text" id="apiKey" class="form-control" placeholder="e.g., qhub_abc123def456...">
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn" id="submitKeyBtn" style="flex: 1;">Submit Token</button>
+                <button class="btn btn-secondary" onclick="closeModal('tokenModal')" style="flex: 1;">Cancel</button>
+            </div>
         </div>
     </div>
-
-    <!-- صفحة البروفايل -->
-    <div id="profilePage" class="page-content">
-        <div class="profile-section">
-            <h2>👤 الحساب</h2>
+    
+    <!-- ==========================================
+         LOGIN MODAL
+         ========================================== -->
+    <div class="modal-overlay" id="loginModal">
+        <div class="modal-card">
+            <h2><i class="fas fa-sign-in-alt"></i> Login to Quotex</h2>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" class="form-control" placeholder="your@email.com">
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" class="form-control" placeholder="Your password">
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn" id="loginBtn" style="flex: 1;">Login</button>
+                <button class="btn btn-secondary" onclick="closeModal('loginModal')" style="flex: 1;">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ==========================================
+         2FA MODAL
+         ========================================== -->
+    <div class="modal-overlay" id="twoFactorModal">
+        <div class="modal-card">
+            <h2><i class="fas fa-shield-alt"></i> Two-Factor Authentication</h2>
+            <p style="color: var(--gray-text); margin-bottom: 20px;">
+                Enter the 6-digit code from your authenticator app
+            </p>
+            <div class="form-group">
+                <label for="twoFactorCode">6-Digit Code</label>
+                <input type="text" id="twoFactorCode" class="form-control" placeholder="123456" maxlength="6">
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn" id="submit2faBtn" style="flex: 1;">Verify</button>
+                <button class="btn btn-secondary" onclick="closeModal('twoFactorModal')" style="flex: 1;">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ==========================================
+         ACCOUNT SWITCH CONFIRMATION MODAL
+         ========================================== -->
+    <div class="modal-overlay" id="confirmModal">
+        <div class="confirm-modal">
+            <h3><i class="fas fa-exclamation-triangle"></i> Confirm Account Switch</h3>
+            <div class="disclaimer">
+                <strong>Warning:</strong> You are about to switch to your <strong>REAL</strong> account. 
+                All trades will use real funds. Please ensure your settings are correct. 
+                We are not responsible for any losses incurred.
+            </div>
+            <p>Are you sure you want to continue?</p>
+            <div class="confirm-buttons">
+                <button class="btn" id="confirmSwitchBtn">Confirm & Accept Risk</button>
+                <button class="btn btn-cancel" onclick="closeModal('confirmModal')">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ==========================================
+         MAIN APPLICATION
+         ========================================== -->
+    <div class="main-app" id="mainApp">
+        <div class="header">
+            <div class="user-info">
+                <div class="user-avatar">U</div>
+                <div class="user-name" id="userName">User</div>
+            </div>
+            <button class="logout-btn" id="logoutBtn">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
+        
+        <div class="content">
+            <!-- Dashboard Page -->
+            <div class="page active" id="dashboardPage">
+                <div class="balance-cards">
+                    <div class="balance-card">
+                        <h3>DEMO BALANCE</h3>
+                        <div class="balance-value" id="demoBalance">$10,000.00</div>
+                    </div>
+                    <div class="balance-card">
+                        <h3>REAL BALANCE</h3>
+                        <div class="balance-value" id="realBalance">$0.00</div>
+                    </div>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalProfit">$0.00</div>
+                        <div class="stat-label">Total Profit</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalLoss">$0.00</div>
+                        <div class="stat-label">Total Loss</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="winRate">0%</div>
+                        <div class="stat-label">Win Rate</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="activeTrades">0</div>
+                        <div class="stat-label">Active Trades</div>
+                    </div>
+                </div>
+            </div>
             
-            <!-- معلومات الحساب - مخفية حتى تسجيل الدخول -->
-            <div id="profileContent" class="hidden-content">
-                <div class="profile-header">
-                    <div class="profile-avatar">Q</div>
-                    <div class="profile-info">
-                        <h3>QuHub User</h3>
-                        <p id="accountStatus">حساب تجريبي نشط</p>
-                    </div>
-                </div>
-                
-                <div class="profile-cards">
-                    <div class="profile-card">
-                        <h4>الرصيد التجريبي</h4>
-                        <p id="demoBalanceProfile">$10,000</p>
-                    </div>
-                    <div class="profile-card">
-                        <h4>الرصيد الحقيقي</h4>
-                        <p id="realBalanceProfile">$2,500</p>
-                    </div>
-                </div>
-                
-                <div class="profile-form">
-                    <div class="config-group">
-                        <label for="apiKey">مفتاح API (التوكن)</label>
-                        <input type="text" id="apiKey" placeholder="أدخل التوكن المولد من التطبيق">
+            <!-- Trading Page -->
+            <div class="page" id="tradingPage">
+                <div class="trading-options">
+                    <h3 style="margin-bottom: 15px; color: #93c5fd;">Trading Settings</h3>
+                    
+                    <div class="account-toggle">
+                        <div class="toggle-btn active" id="demoToggle">Demo Account</div>
+                        <div class="toggle-btn" id="realToggle">Real Account</div>
                     </div>
                     
-                    <div class="config-group">
-                        <label for="accountType">نوع الحساب</label>
-                        <select id="accountType" onchange="changeAccountType()">
-                            <option value="demo">تجريبي</option>
-                            <option value="real">حقيقي</option>
-                            <option value="signals">إشارات فقط</option>
+                    <div class="balance-cards">
+                        <div class="balance-card">
+                            <h3>SELECTED BALANCE</h3>
+                            <div class="balance-value" id="selectedBalance">$10,000.00</div>
+                        </div>
+                    </div>
+                    
+                    <div class="trade-amount">
+                        <label>Trade Amount (USD)</label>
+                        <input type="number" class="form-control" id="tradeAmount" value="10" min="1" max="1000">
+                    </div>
+                    
+                    <div class="strategy-card">
+                        <h3>Select Strategy</h3>
+                        <select class="form-control" id="strategySelect">
+                            <option value="dev1">Strategy 1: Trend Following</option>
+                            <option value="dev2">Strategy 2: Breakout Trading</option>
+                            <option value="dev3">Strategy 3: Mean Reversion</option>
+                            <option value="dev4">Strategy 4: Scalping</option>
+                            <option value="dev5">Strategy 5: News Trading</option>
+                            <option value="dev6">Strategy 6: RSI Advanced</option>
+                            <option value="dev7">Strategy 7: MACD Pro</option>
+                            <option value="dev8">Strategy 8: Bollinger Bands</option>
+                            <option value="dev9">Strategy 9: Fibonacci</option>
+                            <option value="dev10">Strategy 10: Candlestick</option>
                         </select>
                     </div>
-                    
-                    <div class="config-group">
-                        <label for="kucoinAccount">حساب KuCoin</label>
-                        <input type="text" id="kucoinAccount" placeholder="أدخل معرف حساب KuCoin">
+                </div>
+                
+                <button class="btn trade-btn active" id="tradingToggle">
+                    <i class="fas fa-play"></i> Start Trading
+                </button>
+                
+                <div class="trades-container">
+                    <div class="trades-tabs">
+                        <div class="tab active" id="activeTradesTab">Active Trades</div>
+                        <div class="tab" id="completedTradesTab">Completed Trades</div>
                     </div>
                     
-                    <button class="start-btn" onclick="saveProfile()">حفظ الإعدادات</button>
+                    <div class="trade-list" id="tradesList">
+                        <p style="text-align: center; color: var(--gray-text); padding: 20px;">
+                            No trades yet. Click "Start Trading" to begin.
+                        </p>
+                    </div>
                 </div>
-                
-                <button class="logout-btn" onclick="logout()">تسجيل الخروج</button>
             </div>
             
-            <!-- رسالة غير مسجل دخول - تظهر عند عدم تسجيل الدخول -->
-            <div id="notLoggedInMessage">
-                <div class="info-box">
-                    <h3>🔒 لم تقم بتسجيل الدخول</h3>
-                    <p>يرجى تسجيل الدخول لعرض معلومات الحساب.</p>
-                    <button class="login-btn" onclick="showPage('login')">تسجيل الدخول</button>
+            <!-- Signals Page -->
+            <div class="page" id="signalsPage">
+                <h2 style="margin-bottom: 20px; color: #93c5fd;">Live Trading Signals</h2>
+                <div class="signals-grid" id="signalsGrid">
+                    <!-- Signals will be loaded from API -->
                 </div>
             </div>
         </div>
+        
+        <!-- ==========================================
+             BOTTOM NAVIGATION (Shows after login)
+             ========================================== -->
+        <div class="bottom-nav" id="bottomNav">
+            <div class="nav-item active" data-page="dashboardPage">
+                <i class="fas fa-home nav-icon"></i>
+                <span>Dashboard</span>
+            </div>
+            <div class="nav-item" data-page="signalsPage">
+                <i class="fas fa-chart-line nav-icon"></i>
+                <span>Signals</span>
+            </div>
+            <div class="nav-item" data-page="tradingPage">
+                <i class="fas fa-exchange-alt nav-icon"></i>
+                <span>Trading</span>
+            </div>
+        </div>
     </div>
-
-    <!-- شريط التحكم في الأسفل - ملتصق بالأسفل - يظهر فقط في الصفحة الرئيسية -->
-    <div class="control-bar" id="controlBar">
-        <div class="control-left">
-            <button class="icon-btn timeframe-toggle" onclick="toggleTimeframeCard()">
-                <span id="timeframeBtnText">1m</span>
+    
+    <!-- ==========================================
+         SUPPORT BUTTON & CHAT
+         ========================================== -->
+    <button class="support-btn" id="supportBtn">
+        <i class="fas fa-headset"></i>
+    </button>
+    
+    <div class="support-chat" id="supportChat">
+        <div class="support-header">
+            <div class="support-title">
+                <i class="fas fa-headset"></i> Support Chat
+            </div>
+            <button class="close-chat" id="closeChat">
+                <i class="fas fa-times"></i>
             </button>
-            <div class="currency-display-group">
-                <div class="currency-display" id="currencyDisplay">USD/EUR</div>
-                <button class="icon-btn add-btn" onclick="toggleAssetCard()">+</button>
-            </div>
         </div>
-        <div class="control-right">
-            <div class="zoom-controls">
-                <button class="zoom-btn" onclick="zoomOut()">-</button>
-                <button class="zoom-btn" onclick="zoomIn()">+</button>
-            </div>
+        <div class="chat-messages" id="chatMessages">
+            <!-- Live chat messages will be loaded here -->
         </div>
-    </div>
-
-    <!-- شريط التنقل في الأسفل -->
-    <div class="bottom-nav">
-        <button class="nav-btn active" onclick="showPage('home')">
-            <svg viewBox="0 0 24 24">
-                <rect x="4" y="9" width="3" height="6" fill="currentColor" opacity="0.4"/>
-                <line x1="5.5" y1="3" x2="5.5" y2="6" stroke="currentColor" stroke-width="1"/>
-                <line x1="5.5" y1="15" x2="5.5" y2="21" stroke="currentColor" stroke-width="1"/>
-                <rect x="10" y="6" width="3" height="12" fill="currentColor"/>
-                <line x1="11.5" y1="3" x2="11.5" y2="6" stroke="currentColor" stroke-width="1"/>
-                <line x1="11.5" y1="18" x2="11.5" y2="21" stroke="currentColor" stroke-width="1"/>
-                <rect x="16" y="11" width="3" height="2" fill="currentColor" opacity="0.4"/>
-                <line x1="17.5" y1="3" x2="17.5" y2="11" stroke="currentColor" stroke-width="1"/>
-                <line x1="17.5" y1="13" x2="17.5" y2="21" stroke="currentColor" stroke-width="1"/>
-            </svg>
-            <span>التداول</span>
-        </button>
-        <button class="nav-btn" onclick="showPage('signals')">
-            <svg viewBox="0 0 24 24">
-                <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/>
-            </svg>
-            <span>الإشارات</span>
-        </button>
-        <button class="nav-btn" onclick="showPage('bot')">
-            <svg viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
-                <path d="M8 12h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                <path d="M12 8v8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-            <span>البوت</span>
-        </button>
-        <button class="nav-btn" onclick="showPage('about')">
-            <svg viewBox="0 0 24 24">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
-            </svg>
-            <span>حول</span>
-        </button>
-        <button class="nav-btn" onclick="showPage('profile')">
-            <svg viewBox="0 0 24 24">
-                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-            </svg>
-            <span>حسابي</span>
-        </button>
-    </div>
-
-    <!-- كروت اختيار الفريم والعملات -->
-    <div class="card timeframe-card" id="timeframeCard">
-        <div class="card-header">
-            <h3 class="card-title">اختر الوقت</h3>
-            <button class="close-btn" onclick="toggleTimeframeCard()">✕</button>
-        </div>
-        <div class="timeframes-grid">
-            <button class="timeframe-btn" data-timeframe="5s">5s</button>
-            <button class="timeframe-btn" data-timeframe="10s">10s</button>
-            <button class="timeframe-btn" data-timeframe="15s">15s</button>
-            <button class="timeframe-btn" data-timeframe="30s">30s</button>
-            <button class="timeframe-btn active" data-timeframe="1m">1m</button>
-            <button class="timeframe-btn" data-timeframe="2m">2m</button>
-            <button class="timeframe-btn" data-timeframe="3m">3m</button>
-            <button class="timeframe-btn" data-timeframe="5m">5m</button>
-            <button class="timeframe-btn" data-timeframe="10m">10m</button>
-            <button class="timeframe-btn" data-timeframe="15m">15m</button>
-            <button class="timeframe-btn" data-timeframe="30m">30m</button>
-            <button class="timeframe-btn" data-timeframe="1h">1h</button>
-            <button class="timeframe-btn" data-timeframe="4h">4h</button>
-            <button class="timeframe-btn" data-timeframe="1d">1d</button>
+        <div class="chat-input">
+            <input type="text" id="messageInput" placeholder="Type your message...">
+            <button class="send-btn" id="sendMessageBtn">
+                <i class="fas fa-paper-plane"></i>
+            </button>
         </div>
     </div>
-
-    <div class="card asset-type-card" id="assetCard">
-        <div class="card-header">
-            <h3 class="card-title">اختر النوع</h3>
-            <button class="close-btn" onclick="toggleAssetCard()">✕</button>
+    
+    <!-- ==========================================
+         FOOTER (Always visible)
+         ========================================== -->
+    <div class="footer" id="mainFooter">
+        <div class="social-icons">
+            <a href="#" class="social-icon" target="_blank" title="Instagram">
+                <i class="fab fa-instagram"></i>
+            </a>
+            <a href="#" class="social-icon" target="_blank" title="TikTok">
+                <i class="fab fa-tiktok"></i>
+            </a>
+            <a href="#" class="social-icon" target="_blank" title="Twitter">
+                <i class="fab fa-twitter"></i>
+            </a>
+            <a href="#" class="social-icon" target="_blank" title="Facebook">
+                <i class="fab fa-facebook-f"></i>
+            </a>
+            <a href="#" class="social-icon" target="_blank" title="Telegram">
+                <i class="fab fa-telegram"></i>
+            </a>
         </div>
-        <div class="asset-options">
-            <button class="asset-btn" onclick="showAssetList('currencies')">العملات</button>
-            <button class="asset-btn" onclick="showAssetList('crypto')">العملات الرقمية</button>
-            <button class="asset-btn" onclick="showAssetList('commodities')">السلع</button>
-            <button class="asset-btn" onclick="showAssetList('stocks')">الأسهم</button>
+        
+        <div class="footer-links">
+            <a href="#" class="footer-link">Terms of Use</a>
+            <a href="#" class="footer-link">Privacy Policy</a>
         </div>
+        
+        <p class="copyright">
+            &copy; 2025 TradeHub. All rights reserved. | Developed by Quotex Bot Team
+        </p>
     </div>
 
-    <!-- كرت استراتيجيات التداول -->
-    <div class="card asset-type-card" id="strategiesCard" style="display: none; bottom: 120px;">
-        <div class="card-header">
-            <h3 class="card-title">استراتيجيات التداول</h3>
-            <button class="close-btn" onclick="hideStrategies()">✕</button>
-        </div>
-        <div class="asset-options">
-            <button class="asset-btn" onclick="selectStrategy('Moving Average Crossover')">المتوسط المتحرك</button>
-            <button class="asset-btn" onclick="selectStrategy('MACD')">MACD</button>
-            <button class="asset-btn" onclick="selectStrategy('RSI Divergence')">RSI Divergence</button>
-            <button class="asset-btn" onclick="selectStrategy('Bollinger Bands')">Bollinger Bands</button>
-            <button class="asset-btn" onclick="selectStrategy('Ichimoku Cloud')">Ichimoku Cloud</button>
-            <button class="asset-btn" onclick="selectStrategy('Fibonacci Retracement')">Fibonacci Retracement</button>
-        </div>
-    </div>
-
+    <!-- ==========================================
+         JAVASCRIPT - PRODUCTION READY
+         ========================================== -->
     <script>
-        let currentTimeframe = '1m';
-        let currentAsset = 'USD/EUR';
-        let selectedStrategy = '';
-        let isTrading = false;
-        let zoomLevel = 1;
-        let isLoggedIn = false; // حالة تسجيل الدخول
-        let accountType = 'demo'; // نوع الحساب الافتراضي
-
-        function showPage(pageName) {
-            // إخفاء الشريط في جميع الصفحات أولاً
-            document.getElementById('controlBar').classList.remove('visible');
+        // ==========================================
+        // CONFIGURATION - UPDATE WITH YOUR API ENDPOINTS
+        // ==========================================
+        const API_CONFIG = {
+            // TODO: Replace with your actual API endpoints
+            BASE_URL: 'https://your-api-domain.com/api/v1',
+            WEBSOCKET_URL: 'wss://your-websocket-domain.com/ws',
+            TELEGRAM_BOT_URL: 'https://t.me/your_bot_username'
+        };
+        
+        // ==========================================
+        // APPLICATION STATE
+        // ==========================================
+        const AppState = {
+            currentUser: null,
+            apiKey: null,
+            isTrading: false,
+            currentPage: 'dashboard',
+            selectedAccount: 'demo',
+            selectedBalance: 10000,
+            realBalance: 0,
+            trades: [],
+            signals: [],
+            winRate: 0,
+            totalProfit: 0,
+            totalLoss: 0,
+            wsConnection: null,
+            supportChatOpen: false
+        };
+        
+        // ==========================================
+        // SOUND MANAGER - Button Click Sounds
+        // ==========================================
+        class SoundManager {
+            static audioContext = null;
+            static isEnabled = true;
             
-            // إظهار الشريط فقط في صفحة التداول (home)
-            if (pageName === 'home') {
-                document.getElementById('controlBar').classList.add('visible');
+            static init() {
+                // Initialize Web Audio API without external files
+                this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
             }
             
-            document.querySelectorAll('.page-content').forEach(page => {
-                page.classList.remove('active');
-            });
-            document.getElementById(pageName + 'Page').classList.add('active');
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event.target.closest('.nav-btn').classList.add('active');
-            closeAllCards();
-            
-            // إذا حاول المستخدم الانتقال إلى الحساب أو البوت بدون تسجيل الدخول
-            if ((pageName === 'profile' || pageName === 'bot') && !isLoggedIn) {
-                showPage('login');
-                alert('يرجى تسجيل الدخول أولاً');
-            }
-        }
-
-        function toggleTimeframeCard() {
-            const card = document.getElementById('timeframeCard');
-            card.classList.toggle('active');
-            document.getElementById('assetCard').classList.remove('active');
-            document.getElementById('strategiesCard').style.display = 'none';
-            document.querySelectorAll('#tempAssetCard').forEach(c => c.remove());
-        }
-
-        function toggleAssetCard() {
-            const card = document.getElementById('assetCard');
-            card.classList.toggle('active');
-            document.getElementById('timeframeCard').classList.remove('active');
-            document.getElementById('strategiesCard').style.display = 'none';
-        }
-
-        function showStrategies() {
-            document.getElementById('strategiesCard').style.display = 'block';
-            document.getElementById('timeframeCard').classList.remove('active');
-            document.getElementById('assetCard').classList.remove('active');
-        }
-
-        function hideStrategies() {
-            document.getElementById('strategiesCard').style.display = 'none';
-        }
-
-        function selectStrategy(strategy) {
-            selectedStrategy = strategy;
-            document.getElementById('selectedStrategy').textContent = strategy;
-            hideStrategies();
-        }
-
-        function closeAllCards() {
-            document.querySelectorAll('.card').forEach(card => {
-                card.classList.remove('active');
-            });
-            document.getElementById('strategiesCard').style.display = 'none';
-            document.querySelectorAll('#tempAssetCard').forEach(c => c.remove());
-        }
-
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('.card') && !e.target.closest('.icon-btn') && !e.target.closest('.config-group button')) {
-                closeAllCards();
-            }
-        });
-
-        document.querySelectorAll('.timeframe-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('.timeframe-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                currentTimeframe = this.dataset.timeframe;
+            static play(type = 'click') {
+                if (!this.isEnabled || !this.audioContext) return;
                 
-                document.getElementById('timeframeBtnText').textContent = currentTimeframe;
-                document.getElementById('currentTimeframeDisplay').textContent = currentTimeframe;
+                const oscillator = this.audioContext.createOscillator();
+                const gainNode = this.audioContext.createGain();
                 
-                closeAllCards();
-                updateChart();
-            });
-        });
-
-        function selectAsset(asset) {
-            currentAsset = asset;
-            document.getElementById('currencyDisplay').textContent = asset;
-            document.getElementById('currentAssetDisplay').textContent = asset;
-            closeAllCards();
-            updateChart();
-        }
-
-        function showAssetList(type) {
-            let assets = [];
-            switch(type) {
-                case 'currencies':
-                    assets = ['USD/EUR', 'USD/GBP', 'USD/JPY', 'EUR/GBP', 'EUR/JPY', 'GBP/JPY', 'AUD/USD', 'NZD/USD', 'USD/CAD', 'USD/CHF'];
-                    break;
-                case 'crypto':
-                    assets = ['BTC/USDT', 'ETH/USDT', 'BNB/USDT', 'SOL/USDT', 'XRP/USDT', 'ADA/USDT', 'DOGE/USDT', 'DOT/USDT', 'LTC/USDT', 'LINK/USDT'];
-                    break;
-                case 'commodities':
-                    assets = ['GOLD/USD', 'SILVER/USD', 'OIL/USD', 'GAS/USD', 'WHEAT/USD', 'CORN/USD', 'COPPER/USD', 'PLATINUM/USD'];
-                    break;
-                case 'stocks':
-                    assets = ['AAPL', 'GOOGL', 'MSFT', 'TSLA', 'AMZN', 'META', 'NVDA', 'NFLX', 'PYPL', 'INTC'];
-                    break;
+                oscillator.connect(gainNode);
+                gainNode.connect(this.audioContext.destination);
+                
+                // Sound profiles
+                const sounds = {
+                    click: { freq: 800, duration: 0.1, gain: 0.1 },
+                    success: { freq: 1200, duration: 0.15, gain: 0.15 },
+                    error: { freq: 300, duration: 0.2, gain: 0.15 },
+                    warning: { freq: 500, duration: 0.15, gain: 0.12 }
+                };
+                
+                const sound = sounds[type] || sounds.click;
+                
+                oscillator.frequency.setValueAtTime(sound.freq, this.audioContext.currentTime);
+                oscillator.type = 'sine';
+                
+                gainNode.gain.setValueAtTime(sound.gain, this.audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + sound.duration);
+                
+                oscillator.start(this.audioContext.currentTime);
+                oscillator.stop(this.audioContext.currentTime + sound.duration);
             }
             
-            document.querySelectorAll('#tempAssetCard').forEach(c => c.remove());
-            
-            const tempCard = document.createElement('div');
-            tempCard.className = 'card asset-type-card';
-            tempCard.id = 'tempAssetCard';
-            tempCard.style.bottom = '120px';
-            tempCard.style.right = '15px';
-            tempCard.style.left = '15px';
-            tempCard.style.width = 'auto';
-            tempCard.style.transform = 'none';
-            tempCard.style.maxHeight = '70vh';
-            tempCard.style.overflowY = 'auto';
-            
-            let listHTML = '<div class="card-header"><h3 class="card-title">اختر ' + getAssetTypeName(type) + '</h3><button class="close-btn" onclick="closeAllCards()">✕</button></div><div class="asset-options">';
-            assets.forEach(asset => {
-                listHTML += `<button class="asset-btn" onclick="selectAsset('${asset}')">${asset}</button>`;
-            });
-            listHTML += '</div>';
-            
-            tempCard.innerHTML = listHTML;
-            document.body.appendChild(tempCard);
-            
-            document.getElementById('assetCard').classList.remove('active');
-            tempCard.classList.add('active');
+            static toggle() {
+                this.isEnabled = !this.isEnabled;
+                if (this.isEnabled) this.play('success');
+            }
         }
-
-        function getAssetTypeName(type) {
-            const names = {
-                'currencies': 'العملات',
-                'crypto': 'العملات الرقمية',
-                'commodities': 'السلع',
-                'stocks': 'الأسهم'
-            };
-            return names[type] || type;
-        }
-
-        function zoomIn() {
-            zoomLevel = Math.min(zoomLevel + 0.2, 3);
-            document.querySelector('.chart-placeholder').style.transform = `scale(${zoomLevel})`;
-        }
-
-        function zoomOut() {
-            zoomLevel = Math.max(zoomLevel - 0.2, 0.5);
-            document.querySelector('.chart-placeholder').style.transform = `scale(${zoomLevel})`;
-        }
-
-        function updateChart() {
-            const loading = document.getElementById('loading');
-            const placeholder = document.querySelector('.chart-placeholder');
-            
-            loading.classList.add('active');
-            placeholder.style.opacity = '0.3';
-            
-            setTimeout(() => {
-                loading.classList.remove('active');
-                placeholder.style.opacity = '1';
-                placeholder.innerHTML = `
-                    <h2 style="font-size:18px;">📈 ${currentAsset}</h2>
-                    <p>الفريم: <span style="color:#00d2ff">${currentTimeframe}</span></p>
-                    <p>تم تحديث البيانات بنجاح</p>
-                    <p style="margin-top: 20px; font-size: 15px; opacity: 0.6;">
-                        آخر تحديث: ${new Date().toLocaleTimeString('ar')}
-                    </p>
+        
+        // ==========================================
+        // NOTIFICATION SYSTEM
+        // ==========================================
+        class NotificationSystem {
+            static show(message, type = 'info', duration = 4000) {
+                const container = document.getElementById('notificationContainer');
+                const notification = document.createElement('div');
+                notification.className = `notification ${type}`;
+                
+                const icons = {
+                    success: 'check-circle',
+                    error: 'exclamation-circle',
+                    warning: 'exclamation-triangle',
+                    info: 'info-circle'
+                };
+                
+                const titles = {
+                    success: 'Success',
+                    error: 'Error',
+                    warning: 'Warning',
+                    info: 'Info'
+                };
+                
+                notification.innerHTML = `
+                    <div class="notification-icon">
+                        <i class="fas fa-${icons[type]}"></i>
+                    </div>
+                    <div class="notification-content">
+                        <div class="notification-title">${titles[type]}</div>
+                        <div class="notification-message">${message}</div>
+                    </div>
+                    <button class="notification-close" onclick="this.parentElement.remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
                 `;
-            }, 800);
+                
+                container.appendChild(notification);
+                SoundManager.play(type);
+                
+                setTimeout(() => {
+                    notification.style.animation = 'slideOut 0.3s ease-out';
+                    setTimeout(() => notification.remove(), 300);
+                }, duration);
+            }
+            
+            static success(message) { this.show(message, 'success'); }
+            static error(message) { this.show(message, 'error'); }
+            static warning(message) { this.show(message, 'warning'); }
+            static info(message) { this.show(message, 'info'); }
         }
-
-        function toggleTrading() {
-            if (!isLoggedIn) {
-                alert('يرجى تسجيل الدخول أولاً لبدء التداول.');
-                showPage('login');
+        
+        // ==========================================
+        // API INTEGRATION MANAGER
+        // ==========================================
+        class APIManager {
+            static async request(endpoint, options = {}) {
+                const url = `${API_CONFIG.BASE_URL}${endpoint}`;
+                const config = {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${AppState.apiKey}`,
+                        ...options.headers
+                    },
+                    ...options
+                };
+                
+                try {
+                    // TODO: Uncomment when API is ready
+                    // const response = await fetch(url, config);
+                    // const data = await response.json();
+                    // return { success: response.ok, data };
+                    
+                    // Mock response for now - REMOVE IN PRODUCTION
+                    return { success: true, data: { message: 'API call simulated' } };
+                } catch (error) {
+                    console.error('API Error:', error);
+                    return { success: false, error: error.message };
+                }
+            }
+            
+            // TODO: Implement real API calls
+            static async login(email, password) {
+                // TODO: Replace with real API endpoint
+                // return await this.request('/auth/login', {
+                //     method: 'POST',
+                //     body: JSON.stringify({ email, password })
+                // });
+                
+                // Mock - REMOVE IN PRODUCTION
+                return { success: true, data: { token: 'mock_token', user: { id: 1, email } } };
+            }
+            
+            static async verify2FA(code) {
+                // TODO: Replace with real API endpoint
+                // return await this.request('/auth/2fa', {
+                //     method: 'POST',
+                //     body: JSON.stringify({ code })
+                // });
+                
+                // Mock - REMOVE IN PRODUCTION
+                return { success: true, data: { verified: true } };
+            }
+            
+            static async getBalance() {
+                // TODO: Replace with real API endpoint
+                // return await this.request('/account/balance');
+                
+                // Mock - REMOVE IN PRODUCTION
+                return { success: true, data: { demo: 10000, real: 0 } };
+            }
+            
+            static async getTrades() {
+                // TODO: Replace with real API endpoint
+                // return await this.request('/trades');
+                
+                // Mock - REMOVE IN PRODUCTION
+                return { success: true, data: [] };
+            }
+            
+            static async getSignals() {
+                // TODO: Replace with real API endpoint
+                // return await this.request('/signals');
+                
+                // Mock - REMOVE IN PRODUCTION
+                return { success: true, data: [] };
+            }
+            
+            static async startTrading(strategy, amount) {
+                // TODO: Replace with real API endpoint
+                // return await this.request('/trading/start', {
+                //     method: 'POST',
+                //     body: JSON.stringify({ strategy, amount, accountType: AppState.selectedAccount })
+                // });
+                
+                // Mock - REMOVE IN PRODUCTION
+                return { success: true, data: { trading: true } };
+            }
+            
+            static async stopTrading() {
+                // TODO: Replace with real API endpoint
+                // return await this.request('/trading/stop', { method: 'POST' });
+                
+                // Mock - REMOVE IN PRODUCTION
+                return { success: true, data: { trading: false } };
+            }
+            
+            static async sendChatMessage(message) {
+                // TODO: Replace with real API endpoint
+                // return await this.request('/support/message', {
+                //     method: 'POST',
+                //     body: JSON.stringify({ message })
+                // });
+                
+                // Mock - REMOVE IN PRODUCTION
+                return { success: true, data: { messageId: Date.now() } };
+            }
+            
+            // WebSocket for real-time updates
+            static connectWebSocket() {
+                // TODO: Replace with real WebSocket URL
+                // const ws = new WebSocket(`${API_CONFIG.WEBSOCKET_URL}?token=${AppState.apiKey}`);
+                
+                // Mock WebSocket - REMOVE IN PRODUCTION
+                console.log('WebSocket connection simulated');
+                
+                // TODO: Handle real WebSocket events
+                // ws.onmessage = (event) => {
+                //     const data = JSON.parse(event.data);
+                //     this.handleWebSocketMessage(data);
+                // };
+            }
+            
+            static handleWebSocketMessage(data) {
+                // TODO: Handle real-time updates
+                switch (data.type) {
+                    case 'trade_update':
+                        // Update trade in UI
+                        break;
+                    case 'signal_update':
+                        // Update signals in UI
+                        break;
+                    case 'balance_update':
+                        // Update balance in UI
+                        break;
+                }
+            }
+        }
+        
+        // ==========================================
+        // MODAL MANAGEMENT
+        // ==========================================
+        function showModal(modalId) {
+            document.getElementById(modalId).style.display = 'flex';
+            SoundManager.play('click');
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+            SoundManager.play('click');
+        }
+        
+        // ==========================================
+        // COPY COMMAND FUNCTION
+        // ==========================================
+        function copyCommand(elementId) {
+            const text = document.getElementById(elementId).textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                NotificationSystem.success('Command copied to clipboard!');
+            }).catch(() => {
+                NotificationSystem.error('Failed to copy');
+            });
+            SoundManager.play('success');
+        }
+        
+        // ==========================================
+        // AUTH FLOW
+        // ==========================================
+        document.getElementById('followBtn').addEventListener('click', async () => {
+            SoundManager.play('click');
+            // TODO: Open Telegram bot in new tab
+            // window.open(API_CONFIG.TELEGRAM_BOT_URL, '_blank');
+            showModal('tokenModal');
+            NotificationSystem.info('Please enter your API token');
+        });
+        
+        document.getElementById('submitKeyBtn').addEventListener('click', async () => {
+            SoundManager.play('click');
+            const apiKey = document.getElementById('apiKey').value.trim();
+            if (!apiKey) {
+                NotificationSystem.error('Please enter a valid API token');
+                SoundManager.play('error');
                 return;
             }
-            isTrading = !isTrading;
-            const btn = document.getElementById('startTradingBtn');
+            
+            AppState.apiKey = apiKey;
+            closeModal('tokenModal');
+            showModal('loginModal');
+            NotificationSystem.success('Token accepted! Please login to Quotex');
+            SoundManager.play('success');
+        });
+        
+        document.getElementById('loginBtn').addEventListener('click', async () => {
+            SoundManager.play('click');
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value.trim();
+            
+            if (!email || !password) {
+                NotificationSystem.error('Please enter both email and password');
+                SoundManager.play('error');
+                return;
+            }
+            
+            const loginBtn = document.getElementById('loginBtn');
+            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
+            loginBtn.disabled = true;
+            
+            // TODO: Call real API
+            const response = await APIManager.login(email, password);
+            
+            loginBtn.innerHTML = 'Login';
+            loginBtn.disabled = false;
+            
+            if (response.success) {
+                SoundManager.play('success');
+                closeModal('loginModal');
+                
+                // Check if 2FA is required
+                // TODO: Check response from real API
+                const requires2FA = Math.random() > 0.5; // Mock - REMOVE IN PRODUCTION
+                
+                if (requires2FA) {
+                    showModal('twoFactorModal');
+                    NotificationSystem.info('2FA required for security');
+                } else {
+                    await completeLogin();
+                }
+            } else {
+                NotificationSystem.error(response.error || 'Login failed');
+                SoundManager.play('error');
+            }
+        });
+        
+        document.getElementById('submit2faBtn').addEventListener('click', async () => {
+            SoundManager.play('click');
+            const code = document.getElementById('twoFactorCode').value.trim();
+            if (!code || code.length !== 6) {
+                NotificationSystem.error('Please enter a valid 6-digit code');
+                SoundManager.play('error');
+                return;
+            }
+            
+            // TODO: Call real API
+            const response = await APIManager.verify2FA(code);
+            
+            if (response.success) {
+                SoundManager.play('success');
+                closeModal('twoFactorModal');
+                await completeLogin();
+            } else {
+                NotificationSystem.error('Invalid 2FA code');
+                SoundManager.play('error');
+            }
+        });
+        
+        async function completeLogin() {
+            AppState.currentUser = {
+                username: '@trader_' + Math.random().toString(36).substr(2, 9), // TODO: Get from API
+                email: document.getElementById('email').value
+            };
+            
+            document.getElementById('userName').textContent = AppState.currentUser.username;
+            document.getElementById('mainApp').style.display = 'flex';
+            document.getElementById('supportBtn').style.display = 'flex';
+            document.getElementById('bottomNav').style.display = 'flex';
+            document.getElementById('landingPage').style.display = 'none';
+            document.getElementById('mainFooter').style.display = 'none';
+            
+            NotificationSystem.success('Login successful! Welcome to QuHub');
+            SoundManager.play('success');
+            
+            // Load real data
+            await loadDashboardData();
+            await loadSignals();
+            
+            // Connect WebSocket for real-time updates
+            APIManager.connectWebSocket();
+        }
+        
+        // ==========================================
+        // LOAD REAL DATA
+        // ==========================================
+        async function loadDashboardData() {
+            // TODO: Load real balance from API
+            const balanceResponse = await APIManager.getBalance();
+            if (balanceResponse.success) {
+                AppState.selectedBalance = balanceResponse.data.demo;
+                AppState.realBalance = balanceResponse.data.real;
+                document.getElementById('demoBalance').textContent = '$' + AppState.selectedBalance.toFixed(2);
+                document.getElementById('realBalance').textContent = '$' + AppState.realBalance.toFixed(2);
+            }
+            
+            // TODO: Load trades from API
+            const tradesResponse = await APIManager.getTrades();
+            if (tradesResponse.success) {
+                AppState.trades = tradesResponse.data;
+                updateTradesDisplay();
+                updateStats();
+            }
+        }
+        
+        async function loadSignals() {
+            // TODO: Load signals from API
+            const signalsResponse = await APIManager.getSignals();
+            if (signalsResponse.success) {
+                AppState.signals = signalsResponse.data;
+                renderSignals();
+            }
+        }
+        
+        function renderSignals() {
+            const grid = document.getElementById('signalsGrid');
+            grid.innerHTML = '';
+            
+            if (AppState.signals.length === 0) {
+                grid.innerHTML = '<p style="text-align: center; color: var(--gray-text); padding: 20px;">No active signals. Check back soon.</p>';
+                return;
+            }
+            
+            AppState.signals.forEach(signal => {
+                const card = document.createElement('div');
+                card.className = `signal-card signal-${signal.direction}`;
+                card.innerHTML = `
+                    <div class="signal-header">
+                        <div class="signal-icon">
+                            <i class="fas fa-arrow-${signal.direction === 'buy' ? 'up' : 'down'}"></i>
+                        </div>
+                        <div class="signal-pair">${signal.pair}</div>
+                    </div>
+                    <div class="signal-timer">
+                        <div class="timer-container">
+                            <span>Time left:</span>
+                            <div class="timer-circle">${signal.duration}</div>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+        
+        // ==========================================
+        // ACCOUNT SWITCHING
+        // ==========================================
+        document.getElementById('demoToggle').addEventListener('click', async () => {
+            SoundManager.play('click');
+            AppState.selectedAccount = 'demo';
+            AppState.selectedBalance = parseFloat(document.getElementById('demoBalance').textContent.replace(/[$,]/g, ''));
+            document.getElementById('demoToggle').classList.add('active');
+            document.getElementById('realToggle').classList.remove('active', 'danger');
+            document.getElementById('selectedBalance').textContent = '$' + AppState.selectedBalance.toFixed(2);
+            NotificationSystem.info('Switched to Demo Account');
+            
+            // TODO: Notify API of account switch
+            // await APIManager.switchAccount('demo');
+        });
+        
+        document.getElementById('realToggle').addEventListener('click', async () => {
+            SoundManager.play('click');
+            showModal('confirmModal');
+        });
+        
+        document.getElementById('confirmSwitchBtn').addEventListener('click', async () => {
+            SoundManager.play('success');
+            AppState.selectedAccount = 'real';
+            AppState.selectedBalance = AppState.realBalance;
+            document.getElementById('realToggle').classList.add('active', 'danger');
+            document.getElementById('demoToggle').classList.remove('active');
+            document.getElementById('selectedBalance').textContent = '$' + AppState.selectedBalance.toFixed(2);
+            closeModal('confirmModal');
+            NotificationSystem.warning('Switched to Real Account - Trade carefully!');
+            
+            // TODO: Notify API of account switch
+            // await APIManager.switchAccount('real');
+        });
+        
+        // ==========================================
+        // TRADING CONTROL
+        // ==========================================
+        document.getElementById('tradingToggle').addEventListener('click', async () => {
+            SoundManager.play('click');
+            
+            if (AppState.isTrading) {
+                // Stop trading
+                const response = await APIManager.stopTrading();
+                if (response.success) {
+                    AppState.isTrading = false;
+                    const btn = document.getElementById('tradingToggle');
+                    btn.innerHTML = '<i class="fas fa-play"></i> Start Trading';
+                    btn.classList.add('active');
+                    btn.style.background = 'linear-gradient(to right, #3b82f6, #1d4ed8)';
+                    NotificationSystem.warning('Trading stopped');
+                } else {
+                    NotificationSystem.error('Failed to stop trading');
+                    SoundManager.play('error');
+                }
+            } else {
+                // Start trading
+                const strategy = document.getElementById('strategySelect').value;
+                const amount = parseFloat(document.getElementById('tradeAmount').value);
+                
+                const response = await APIManager.startTrading(strategy, amount);
+                if (response.success) {
+                    AppState.isTrading = true;
+                    const btn = document.getElementById('tradingToggle');
+                    btn.innerHTML = '<i class="fas fa-pause"></i> Stop Trading';
+                    btn.classList.remove('active');
+                    btn.style.background = 'var(--danger)';
+                    NotificationSystem.success('Trading started');
+                } else {
+                    NotificationSystem.error('Failed to start trading');
+                    SoundManager.play('error');
+                }
+            }
+        });
+        
+        // ==========================================
+        // SUPPORT CHAT
+        // ==========================================
+        document.getElementById('supportBtn').addEventListener('click', () => {
+            SoundManager.play('click');
+            const chat = document.getElementById('supportChat');
+            chat.style.display = chat.style.display === 'flex' ? 'none' : 'flex';
+            AppState.supportChatOpen = !AppState.supportChatOpen;
+        });
+        
+        document.getElementById('closeChat').addEventListener('click', () => {
+            SoundManager.play('click');
+            document.getElementById('supportChat').style.display = 'none';
+            AppState.supportChatOpen = false;
+        });
+        
+        document.getElementById('sendMessageBtn').addEventListener('click', async () => {
+            SoundManager.play('click');
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            const messages = document.getElementById('chatMessages');
+            const userMsg = document.createElement('div');
+            userMsg.className = 'message sent';
+            userMsg.innerHTML = `<strong>You:</strong><br>${message}`;
+            messages.appendChild(userMsg);
+            
+            input.value = '';
+            messages.scrollTop = messages.scrollHeight;
+            
+            // TODO: Send to real support API
+            const response = await APIManager.sendChatMessage(message);
+            
+            if (response.success) {
+                // Simulate support response (TODO: Replace with real WebSocket push)
+                setTimeout(() => {
+                    const responseMsg = document.createElement('div');
+                    responseMsg.className = 'message received';
+                    responseMsg.innerHTML = `<strong>Support:</strong><br>Thank you for your message. A support agent will reply shortly.`;
+                    messages.appendChild(responseMsg);
+                    messages.scrollTop = messages.scrollHeight;
+                    SoundManager.play('success');
+                }, 1000);
+            } else {
+                NotificationSystem.error('Failed to send message');
+                SoundManager.play('error');
+            }
+        });
+        
+        document.getElementById('messageInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('sendMessageBtn').click();
+            }
+        });
+        
+        // ==========================================
+        // NAVIGATION
+        // ==========================================
+        document.querySelectorAll('.nav-item[data-page]').forEach(nav => {
+            nav.addEventListener('click', async (e) => {
+                SoundManager.play('click');
+                const pageId = e.currentTarget.getAttribute('data-page');
+                
+                document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+                document.getElementById(pageId).classList.add('active');
+                
+                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                e.currentTarget.classList.add('active');
+                
+                if (pageId === 'signalsPage') {
+                    await loadSignals();
+                } else if (pageId === 'tradingPage') {
+                    // Update trades list
+                    const tradesResponse = await APIManager.getTrades();
+                    if (tradesResponse.success) {
+                        AppState.trades = tradesResponse.data;
+                        updateTradesDisplay();
+                    }
+                }
+            });
+        });
+        
+        // ==========================================
+        // LOGOUT
+        // ==========================================
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            SoundManager.play('click');
+            if (confirm('Are you sure you want to logout?')) {
+                // TODO: Call logout API
+                // await APIManager.logout();
+                
+                // Reset state
+                AppState.currentUser = null;
+                AppState.apiKey = null;
+                AppState.isTrading = false;
+                
+                // Reset UI
+                document.getElementById('mainApp').style.display = 'none';
+                document.getElementById('supportBtn').style.display = 'none';
+                document.getElementById('supportChat').style.display = 'none';
+                document.getElementById('bottomNav').style.display = 'none';
+                document.getElementById('landingPage').style.display = 'flex';
+                document.getElementById('mainFooter').style.display = 'block';
+                
+                // Clear forms
+                document.getElementById('apiKey').value = '';
+                document.getElementById('email').value = '';
+                document.getElementById('password').value = '';
+                document.getElementById('twoFactorCode').value = '';
+                
+                NotificationSystem.info('Logged out successfully');
+                SoundManager.play('success');
+            }
+        });
+        
+        // ==========================================
+        // INITIALIZATION
+        // ==========================================
+        document.addEventListener('DOMContentLoaded', () => {
+            SoundManager.init();
+            NotificationSystem.info('QuHub Trading Bot initialized');
+        });
+        
+        // ==========================================
+        // TRADES DISPLAY UPDATE
+        // ==========================================
+        function updateTradesDisplay() {
+            const activeTrades = AppState.trades.filter(t => t.status === 'running');
+            const completedTrades = AppState.trades.filter(t => t.status !== 'running');
             const tradesList = document.getElementById('tradesList');
             
-            if (isTrading) {
-                btn.textContent = 'إيقاف التداول';
-                btn.classList.remove('start-btn');
-                btn.classList.add('stop-btn');
-                tradesList.style.display = 'block';
+            let html = '';
+            
+            // Active trades
+            if (activeTrades.length > 0) {
+                html += '<div style="margin-bottom: 20px;"><h3 style="color: #93c5fd; margin-bottom: 10px;">Active Trades</h3>';
+                activeTrades.forEach(trade => {
+                    const directionIcon = trade.direction === 'buy' ? 'up' : 'down';
+                    const directionColor = trade.direction === 'buy' ? 'success' : 'danger';
+                    
+                    html += `
+                        <div class="trade-item" style="border-color: var(--${directionColor});">
+                            <div class="trade-header">
+                                <div class="trade-pair">
+                                    <i class="fas fa-arrow-${directionIcon}" style="color: var(--${directionColor});"></i> 
+                                    ${trade.pair.toUpperCase()}
+                                </div>
+                                <div style="color: #f59e0b; font-weight: bold;">
+                                    <i class="fas fa-clock"></i> ${trade.duration}m
+                                </div>
+                            </div>
+                            <div class="trade-details">
+                                <div>Amount: $${trade.amount}</div>
+                                <div>Direction: ${trade.direction.toUpperCase()}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            }
+            
+            // Completed trades
+            if (completedTrades.length > 0) {
+                html += '<div><h3 style="color: #93c5fd; margin-bottom: 10px;">Completed Trades</h3>';
+                completedTrades.slice(-10).reverse().forEach(trade => {
+                    const resultClass = trade.status === 'profit' ? 'trade-profit' : 'trade-loss';
+                    const resultText = trade.status === 'profit' ? 
+                        `+ $${trade.result.toFixed(2)}` : 
+                        `- $${Math.abs(trade.result).toFixed(2)}`;
+                    
+                    html += `
+                        <div class="trade-item">
+                            <div class="trade-header">
+                                <div class="trade-pair">${trade.pair.toUpperCase()}</div>
+                                <div class="${resultClass}">${resultText}</div>
+                            </div>
+                            <div class="trade-details">
+                                <div>Amount: $${trade.amount}</div>
+                                <div>Duration: ${trade.duration} min</div>
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            }
+            
+            if (html === '') {
+                tradesList.innerHTML = '<p style="text-align: center; color: var(--gray-text); padding: 20px;">No trades yet. Click "Start Trading" to begin.</p>';
             } else {
-                btn.textContent = 'ابدأ التداول';
-                btn.classList.remove('stop-btn');
-                btn.classList.add('start-btn');
-                tradesList.style.display = 'none';
+                tradesList.innerHTML = html;
             }
         }
-
-        function saveSettings() {
-            if (!isLoggedIn) {
-                alert('يرجى تسجيل الدخول أولاً لحفظ الإعدادات.');
-                showPage('login');
-                return;
-            }
-            alert('تم حفظ إعدادات التداول بنجاح!');
+        
+        // ==========================================
+        // STATS UPDATE
+        // ==========================================
+        function updateStats() {
+            document.getElementById('totalProfit').textContent = '$' + AppState.totalProfit.toFixed(2);
+            document.getElementById('totalLoss').textContent = '$' + AppState.totalLoss.toFixed(2);
+            document.getElementById('winRate').textContent = AppState.winRate + '%';
+            document.getElementById('activeTrades').textContent = AppState.trades.filter(t => t.status === 'running').length;
         }
-
-        function login() {
-            const token = document.getElementById('loginToken').value;
-            if (token.trim() !== '') {
-                // في تطبيق حقيقي، ستتحقق من التوكن هنا
-                isLoggedIn = true;
-                document.getElementById('profileContent').classList.remove('hidden-content');
-                document.getElementById('notLoggedInMessage').style.display = 'none';
-                document.getElementById('balanceDisplay').classList.remove('hidden-content');
-                showPage('profile');
-                alert('تم تسجيل الدخول بنجاح!');
-            } else {
-                alert('الرجاء إدخال التوكن');
-            }
-        }
-
-        function saveProfile() {
-            if (!isLoggedIn) {
-                alert('يرجى تسجيل الدخول أولاً.');
-                return;
-            }
-            alert('تم حفظ إعدادات الحساب بنجاح!');
-        }
-
-        function logout() {
-            if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
-                isLoggedIn = false;
-                accountType = 'demo';
-                document.getElementById('profileContent').classList.add('hidden-content');
-                document.getElementById('notLoggedInMessage').style.display = 'block';
-                document.getElementById('balanceDisplay').classList.add('hidden-content');
-                document.getElementById('accountType').value = 'demo';
-                document.getElementById('accountStatus').textContent = 'حساب تجريبي نشط';
-                showPage('login');
-                alert('تم تسجيل الخروج بنجاح!');
-            }
-        }
-
-        function changeAccountType() {
-            if (!isLoggedIn) return;
-            
-            const newType = document.getElementById('accountType').value;
-            accountType = newType;
-            
-            // تحديث رسالة الحالة في صفحة الحساب
-            const statusMap = {
-                'demo': 'حساب تجريبي نشط',
-                'real': 'حساب حقيقي نشط',
-                'signals': 'نظام الإشارات فقط'
-            };
-            document.getElementById('accountStatus').textContent = statusMap[newType] || 'حساب نشط';
-            
-            // تحديث عرض الرصيد في صفحة التداول (إذا كانت مفتوحة)
-            if (document.getElementById('botPage').classList.contains('active')) {
-                updateBalanceDisplay();
-            }
-        }
-
-        function updateBalanceDisplay() {
-            // في تطبيق حقيقي، سيتم تحديث القيم من الخادم
-            // لعرض توضيحي فقط
-            if (accountType === 'real') {
-                document.getElementById('demoBalance').textContent = '$0.00';
-                document.getElementById('realBalance').textContent = '$2,500';
-                document.getElementById('demoBalanceProfile').textContent = '$0.00';
-                document.getElementById('realBalanceProfile').textContent = '$2,500';
-            } else if (accountType === 'demo') {
-                document.getElementById('demoBalance').textContent = '$10,000';
-                document.getElementById('realBalance').textContent = '$0.00';
-                document.getElementById('demoBalanceProfile').textContent = '$10,000';
-                document.getElementById('realBalanceProfile').textContent = '$0.00';
-            }
-        }
-
-        // تحديث عرض الرصيد عند تغيير نوع الحساب
-        document.getElementById('accountType').addEventListener('change', changeAccountType);
-
     </script>
 </body>
 </html>
